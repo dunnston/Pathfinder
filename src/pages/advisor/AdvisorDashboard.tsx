@@ -1,80 +1,150 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { useClientStore } from '@/stores'
+import { AdvisorLayout, AdvisorPage, ClientCard } from '@/components/layout'
+import { Button } from '@/components/common'
 
-export function AdvisorDashboard() {
-  const navigate = useNavigate()
+export function AdvisorDashboard(): JSX.Element {
+  const { clients } = useClientStore()
+
+  const stats = {
+    total: clients.length,
+    inProgress: clients.filter((c) => c.status === 'active').length,
+    completed: clients.filter((c) => c.status === 'completed').length,
+    pending: clients.filter((c) => c.status === 'pending').length,
+  }
+
+  const recentClients = clients
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 6)
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-sm min-h-screen">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-semibold text-gray-900">Pathfinder</h1>
-          <p className="text-sm text-gray-500">Advisor Portal</p>
-        </div>
-        <nav className="p-4">
-          <ul className="space-y-2">
-            <li>
-              <a
-                href="#"
-                className="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium"
-              >
-                Dashboard
-              </a>
-            </li>
-            <li>
-              <button
-                onClick={() => navigate('/advisor/clients')}
-                className="block w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-              >
-                Clients
-              </button>
-            </li>
-          </ul>
-        </nav>
-        <div className="absolute bottom-4 left-4">
-          <button
-            onClick={() => navigate('/')}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Switch Mode
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-gray-500">Welcome back! Here's an overview of your clients.</p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <p className="text-sm text-gray-500 mb-1">Total Clients</p>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <p className="text-sm text-gray-500 mb-1">Profiles In Progress</p>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <p className="text-sm text-gray-500 mb-1">Completed Profiles</p>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
+    <AdvisorLayout
+      title="Dashboard"
+      subtitle="Welcome back! Here's an overview of your clients."
+    >
+      <AdvisorPage>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            label="Total Clients"
+            value={stats.total}
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="In Progress"
+            value={stats.inProgress}
+            color="warning"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Not Started"
+            value={stats.pending}
+            color="gray"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            }
+          />
+          <StatCard
+            label="Completed"
+            value={stats.completed}
+            color="success"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <button
-            onClick={() => navigate('/advisor/clients/new')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Add New Client
-          </button>
+        {/* Recent Clients */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Recent Clients</h3>
+            <Link to="/advisor/clients">
+              <Button variant="ghost" size="sm">
+                View All
+              </Button>
+            </Link>
+          </div>
+
+          {recentClients.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recentClients.map((client) => (
+                <ClientCard key={client.id} client={client} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState />
+          )}
         </div>
-      </main>
+      </AdvisorPage>
+    </AdvisorLayout>
+  )
+}
+
+interface StatCardProps {
+  label: string
+  value: number
+  icon: React.ReactNode
+  color?: 'primary' | 'success' | 'warning' | 'gray'
+}
+
+function StatCard({ label, value, icon, color = 'primary' }: StatCardProps): JSX.Element {
+  const colorStyles = {
+    primary: 'bg-primary/10 text-primary',
+    success: 'bg-success/10 text-success',
+    warning: 'bg-warning/10 text-warning',
+    gray: 'bg-gray-100 text-gray-500',
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-lg ${colorStyles[color]}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EmptyState(): JSX.Element {
+  return (
+    <div className="text-center py-12">
+      <svg
+        className="w-12 h-12 mx-auto text-gray-300 mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+      </svg>
+      <h3 className="text-lg font-medium text-gray-900 mb-1">No clients yet</h3>
+      <p className="text-gray-500 mb-4">
+        Get started by adding your first client
+      </p>
+      <Link to="/advisor/clients/new">
+        <Button>Add Your First Client</Button>
+      </Link>
     </div>
   )
 }

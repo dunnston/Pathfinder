@@ -10,48 +10,42 @@ import type {
   ClientStatus,
   ClientFilters,
   ClientSortOptions,
-  ProfileStatus,
+  CreateClientInput,
+  SectionProgress,
 } from '@/types';
 
 interface ClientState {
-  // All clients for the current advisor
   clients: Client[];
-  // Currently selected client ID
   selectedClientId: string | null;
-  // Current filters
   filters: ClientFilters;
-  // Current sort options
   sortOptions: ClientSortOptions;
 }
 
 interface ClientActions {
-  // Add a new client
-  addClient: (client: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  // Update an existing client
+  addClient: (input: CreateClientInput) => Client;
   updateClient: (clientId: string, updates: Partial<Client>) => void;
-  // Remove a client (archives, doesn't delete)
-  archiveClient: (clientId: string) => void;
-  // Permanently delete a client
   deleteClient: (clientId: string) => void;
-  // Select a client
-  selectClient: (clientId: string | null) => void;
-  // Update filters
+  archiveClient: (clientId: string) => void;
+  getClient: (clientId: string) => Client | undefined;
+  setSelectedClient: (clientId: string | null) => void;
   setFilters: (filters: ClientFilters) => void;
-  // Update sort options
   setSortOptions: (options: ClientSortOptions) => void;
-  // Update client's profile status
-  updateClientProfileStatus: (clientId: string, status: ProfileStatus) => void;
-  // Get filtered and sorted clients
+  updateSectionProgress: (clientId: string, section: string, progress: number) => void;
   getFilteredClients: () => Client[];
-  // Clear all data
   reset: () => void;
 }
 
 type ClientStore = ClientState & ClientActions;
 
-// Generate a simple unique ID
 function generateId(): string {
   return `client_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function calculateProfileCompletion(sectionProgress: SectionProgress): number {
+  const sections = Object.values(sectionProgress);
+  if (sections.length === 0) return 0;
+  const total = sections.reduce((sum, progress) => sum + (progress || 0), 0);
+  return total / 5; // 5 discovery sections
 }
 
 const initialState: ClientState = {
@@ -59,7 +53,7 @@ const initialState: ClientState = {
   selectedClientId: null,
   filters: {},
   sortOptions: {
-    field: 'lastUpdated',
+    field: 'updatedAt',
     direction: 'desc',
   },
 };
@@ -69,21 +63,27 @@ export const useClientStore = create<ClientStore>()(
     (set, get) => ({
       ...initialState,
 
-      addClient: (clientData) => {
-        const id = generateId();
+      addClient: (input) => {
         const now = new Date();
         const newClient: Client = {
-          ...clientData,
-          id,
+          id: generateId(),
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          advisorNotes: input.advisorNotes,
+          status: 'pending',
+          profileCompletion: 0,
+          sectionProgress: {},
           createdAt: now,
           updatedAt: now,
         };
 
         set((state) => ({
           clients: [...state.clients, newClient],
+          selectedClientId: newClient.id,
         }));
 
-        return id;
+        return newClient;
       },
 
       updateClient: (clientId, updates) =>
@@ -95,17 +95,6 @@ export const useClientStore = create<ClientStore>()(
           ),
         })),
 
-      archiveClient: (clientId) =>
-        set((state) => ({
-          clients: state.clients.map((client) =>
-            client.id === clientId
-              ? { ...client, clientStatus: 'archived' as ClientStatus, updatedAt: new Date() }
-              : client
-          ),
-          selectedClientId:
-            state.selectedClientId === clientId ? null : state.selectedClientId,
-        })),
-
       deleteClient: (clientId) =>
         set((state) => ({
           clients: state.clients.filter((client) => client.id !== clientId),
@@ -113,19 +102,50 @@ export const useClientStore = create<ClientStore>()(
             state.selectedClientId === clientId ? null : state.selectedClientId,
         })),
 
-      selectClient: (clientId) => set({ selectedClientId: clientId }),
+      archiveClient: (clientId) =>
+        set((state) => ({
+          clients: state.clients.map((client) =>
+            client.id === clientId
+              ? { ...client, status: 'archived' as ClientStatus, updatedAt: new Date() }
+              : client
+          ),
+          selectedClientId:
+            state.selectedClientId === clientId ? null : state.selectedClientId,
+        })),
+
+      getClient: (clientId) => {
+        return get().clients.find((c) => c.id === clientId);
+      },
+
+      setSelectedClient: (clientId) => set({ selectedClientId: clientId }),
 
       setFilters: (filters) => set({ filters }),
 
       setSortOptions: (sortOptions) => set({ sortOptions }),
 
-      updateClientProfileStatus: (clientId, status) =>
+      updateSectionProgress: (clientId, section, progress) =>
         set((state) => ({
-          clients: state.clients.map((client) =>
-            client.id === clientId
-              ? { ...client, profileStatus: status, updatedAt: new Date() }
-              : client
-          ),
+          clients: state.clients.map((client) => {
+            if (client.id !== clientId) return client;
+
+            const newSectionProgress = {
+              ...client.sectionProgress,
+              [section]: progress,
+            };
+            const newProfileCompletion = calculateProfileCompletion(newSectionProgress);
+            const newStatus: ClientStatus =
+              newProfileCompletion === 1 ? 'completed' :
+              newProfileCompletion > 0 ? 'active' :
+              client.status;
+
+            return {
+              ...client,
+              sectionProgress: newSectionProgress,
+              profileCompletion: newProfileCompletion,
+              status: newStatus,
+              updatedAt: new Date(),
+            };
+          }),
         })),
 
       getFilteredClients: () => {
@@ -135,17 +155,13 @@ export const useClientStore = create<ClientStore>()(
 
         // Apply filters
         if (filters.status?.length) {
-          filtered = filtered.filter((c) => filters.status!.includes(c.clientStatus));
-        }
-        if (filters.profileStatus?.length) {
-          filtered = filtered.filter((c) => filters.profileStatus!.includes(c.profileStatus));
+          filtered = filtered.filter((c) => filters.status!.includes(c.status));
         }
         if (filters.searchQuery) {
           const query = filters.searchQuery.toLowerCase();
           filtered = filtered.filter(
             (c) =>
-              c.firstName.toLowerCase().includes(query) ||
-              c.lastName.toLowerCase().includes(query) ||
+              c.name.toLowerCase().includes(query) ||
               c.email?.toLowerCase().includes(query)
           );
         }
@@ -161,15 +177,16 @@ export const useClientStore = create<ClientStore>()(
 
           switch (sortOptions.field) {
             case 'name':
-              comparison = `${a.lastName} ${a.firstName}`.localeCompare(
-                `${b.lastName} ${b.firstName}`
-              );
+              comparison = a.name.localeCompare(b.name);
               break;
-            case 'lastUpdated':
+            case 'updatedAt':
               comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
               break;
+            case 'profileCompletion':
+              comparison = b.profileCompletion - a.profileCompletion;
+              break;
             case 'status':
-              comparison = a.clientStatus.localeCompare(b.clientStatus);
+              comparison = a.status.localeCompare(b.status);
               break;
             default:
               comparison = 0;
@@ -185,24 +202,16 @@ export const useClientStore = create<ClientStore>()(
     }),
     {
       name: 'pathfinder-clients',
-      // Custom serialization for Date objects
       storage: {
         getItem: (name) => {
           const str = localStorage.getItem(name);
           if (!str) return null;
           const data = JSON.parse(str);
-          // Restore Date objects in clients
           if (data.state?.clients) {
             data.state.clients = data.state.clients.map((client: Client) => ({
               ...client,
               createdAt: new Date(client.createdAt),
               updatedAt: new Date(client.updatedAt),
-              lastContactDate: client.lastContactDate
-                ? new Date(client.lastContactDate)
-                : undefined,
-              nextActionDate: client.nextActionDate
-                ? new Date(client.nextActionDate)
-                : undefined,
             }));
           }
           return data;
