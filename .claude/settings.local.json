@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm run typecheck:*)",
+      "Bash(git init:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(core\\): add TypeScript types and Zustand stores \\(Phase 1 complete\\)\n\n- Add all type definitions: user, profile, basicContext, retirementVision,\n  planningPreferences, riskComfort, financialSnapshot, systemClassifications,\n  client, discovery, and common types\n- Create Zustand stores: userStore, profileStore, clientStore, uiStore\n- Configure all routes with placeholder pages for consumer and advisor flows\n- Update MVP_TRACKER.md with Phase 1 completion status\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

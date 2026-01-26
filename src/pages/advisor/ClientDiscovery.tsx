@@ -1,10 +1,12 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useClientStore } from '@/stores'
+import { useClientStore, useProfileStore } from '@/stores'
 import { AdvisorLayout, AdvisorPage } from '@/components/layout'
 import { Button, Card, CardContent, TextArea } from '@/components/common'
 import { SimpleProgress } from '@/components/common/ProgressIndicator'
+import { BasicContextForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { DiscoverySection } from '@/types'
+import type { DiscoverySection, BasicContext } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, string> = {
@@ -29,8 +31,16 @@ export function ClientDiscovery(): JSX.Element {
   const { id, section: sectionSlug } = useParams<{ id: string; section: string }>()
   const navigate = useNavigate()
   const { getClient, updateClient, updateSectionProgress } = useClientStore()
+  const { currentProfile, updateSection, initializeProfile } = useProfileStore()
 
   const client = id ? getClient(id) : null
+
+  // Initialize or load profile for this client
+  useEffect(() => {
+    if (client && (!currentProfile || currentProfile.userId !== client.id)) {
+      initializeProfile(client.id)
+    }
+  }, [client, currentProfile, initializeProfile])
 
   if (!client) {
     return (
@@ -103,6 +113,57 @@ export function ClientDiscovery(): JSX.Element {
     return <></>
   }
 
+  // Handle section-specific form saves
+  const handleBasicContextSave = (data: BasicContext): void => {
+    updateSection('basicContext', data)
+    handleNext()
+  }
+
+  const handleBasicContextAutoSave = (data: Partial<BasicContext>): void => {
+    updateSection('basicContext', data)
+  }
+
+  // Render section-specific form
+  const renderSectionContent = (): JSX.Element => {
+    switch (currentSectionId) {
+      case 'basicContext':
+        return (
+          <BasicContextForm
+            initialData={currentProfile?.basicContext}
+            onSave={handleBasicContextSave}
+            onAutoSave={handleBasicContextAutoSave}
+            isAdvisorMode={true}
+            clientName={client.name}
+          />
+        )
+
+      // Placeholder for other sections
+      case 'retirementVision':
+      case 'planningPreferences':
+      case 'riskComfort':
+      case 'financialSnapshot':
+        return (
+          <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-gray-500 font-medium">
+              {currentSection.title} Form
+            </p>
+            <p className="mt-2 text-sm text-gray-400">
+              This form will be implemented in a later phase.
+              For now, you can navigate through sections to test the flow.
+            </p>
+          </div>
+        )
+
+      default:
+        return <div>Unknown section</div>
+    }
+  }
+
   return (
     <AdvisorLayout
       title={`Discovery: ${currentSection.title}`}
@@ -166,20 +227,9 @@ export function ClientDiscovery(): JSX.Element {
               })}
             </div>
 
-            {/* Placeholder for section form */}
-            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center mb-8">
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-gray-500 font-medium">
-                {currentSection.title} Form
-              </p>
-              <p className="mt-2 text-sm text-gray-400">
-                This form will be implemented in a later phase.
-                For now, you can navigate through sections to test the flow.
-              </p>
+            {/* Section form */}
+            <div className="mb-8">
+              {renderSectionContent()}
             </div>
 
             {/* Advisor notes field */}
