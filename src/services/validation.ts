@@ -170,3 +170,104 @@ export function validateBasicContext(data: unknown): {
 
   return { success: false, errors }
 }
+
+// ============================================================
+// Section 2: Retirement Vision Schemas
+// ============================================================
+
+/** Flexibility enum */
+export const flexibilitySchema = z.enum([
+  'very_flexible',
+  'somewhat_flexible',
+  'fixed',
+])
+
+/** Concern type enum */
+export const concernTypeSchema = z.enum([
+  'outliving_savings',
+  'healthcare_costs',
+  'healthcare_coverage',
+  'spouse_security',
+  'market_volatility',
+  'inflation',
+  'boredom_identity',
+  'family_obligations',
+  'unexpected_expenses',
+  'other',
+])
+
+/** Concern severity enum */
+export const concernSeveritySchema = z.enum([
+  'minor',
+  'moderate',
+  'significant',
+  'major',
+])
+
+/** Retirement concern schema */
+export const retirementConcernSchema = z.object({
+  type: concernTypeSchema,
+  severity: concernSeveritySchema,
+  notes: z.string().optional(),
+})
+
+/** Lifestyle priority schema */
+export const lifestylePrioritySchema = z.object({
+  priority: z.string().min(1, 'Priority is required'),
+  rank: z.number().min(1).max(10),
+})
+
+/** Complete Retirement Vision schema */
+export const retirementVisionSchema = z.object({
+  targetRetirementAge: z.number()
+    .min(50, 'Target retirement age must be at least 50')
+    .max(85, 'Target retirement age must be 85 or less'),
+  targetRetirementYear: z.number().optional(),
+  retirementFlexibility: flexibilitySchema,
+  visionDescription: z.string().optional(),
+  topConcerns: z.array(retirementConcernSchema)
+    .min(1, 'Please select at least one concern')
+    .max(5, 'Please select no more than 5 concerns'),
+  mustHaveOutcomes: z.array(z.string())
+    .min(1, 'Please add at least one must-have outcome'),
+  niceToHaveOutcomes: z.array(z.string()).default([]),
+  lifestylePriorities: z.array(lifestylePrioritySchema)
+    .min(3, 'Please rank at least 3 priorities'),
+  financialPurposeStatement: z.string().optional(),
+})
+
+/** Type inferred from the schema */
+export type RetirementVisionFormData = z.infer<typeof retirementVisionSchema>
+
+/** Individual field schemas for Retirement Vision */
+export const retirementVisionFieldSchemas = {
+  targetRetirementAge: z.number()
+    .min(50, 'Must be at least 50')
+    .max(85, 'Must be 85 or less'),
+  targetRetirementYear: z.number().optional(),
+  retirementFlexibility: flexibilitySchema,
+  visionDescription: z.string().optional(),
+}
+
+/**
+ * Validate the complete Retirement Vision form
+ */
+export function validateRetirementVision(data: unknown): {
+  success: boolean
+  data?: RetirementVisionFormData
+  errors?: Record<string, string>
+} {
+  const result = retirementVisionSchema.safeParse(data)
+
+  if (result.success) {
+    return { success: true, data: result.data }
+  }
+
+  const errors: Record<string, string> = {}
+  for (const error of result.error.errors) {
+    const path = error.path.join('.')
+    errors[path] = error.message
+  }
+
+  return { success: false, errors }
+}

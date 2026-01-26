@@ -4,9 +4,9 @@ import { useClientStore, useProfileStore } from '@/stores'
 import { AdvisorLayout, AdvisorPage } from '@/components/layout'
 import { Button, Card, CardContent, TextArea } from '@/components/common'
 import { SimpleProgress } from '@/components/common/ProgressIndicator'
-import { BasicContextForm } from '@/components/discovery'
+import { BasicContextForm, RetirementVisionForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { DiscoverySection, BasicContext } from '@/types'
+import type { DiscoverySection, BasicContext, RetirementVision } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, string> = {
@@ -123,6 +123,15 @@ export function ClientDiscovery(): JSX.Element {
     updateSection('basicContext', data)
   }
 
+  const handleRetirementVisionSave = (data: RetirementVision): void => {
+    updateSection('retirementVision', data)
+    handleNext()
+  }
+
+  const handleRetirementVisionAutoSave = (data: Partial<RetirementVision>): void => {
+    updateSection('retirementVision', data)
+  }
+
   // Render section-specific form
   const renderSectionContent = (): JSX.Element => {
     switch (currentSectionId) {
@@ -137,8 +146,18 @@ export function ClientDiscovery(): JSX.Element {
           />
         )
 
-      // Placeholder for other sections
       case 'retirementVision':
+        return (
+          <RetirementVisionForm
+            initialData={currentProfile?.retirementVision}
+            onSave={handleRetirementVisionSave}
+            onAutoSave={handleRetirementVisionAutoSave}
+            isAdvisorMode={true}
+            clientName={client.name}
+          />
+        )
+
+      // Placeholder for other sections
       case 'planningPreferences':
       case 'riskComfort':
       case 'financialSnapshot':
