@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 1 Complete - Types and stores are done.
+**Current State:** Phase 2 Complete - Common UI components are done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -71,24 +71,24 @@ prettier
 ---
 
 ### Phase 2: Common UI Components
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Build reusable components following design system
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create Button variants (Primary, Secondary, Ghost) | Not Started | src/components/common/ |
-| Create Input components (Text, Number, Date) | Not Started | With validation states |
-| Create Select/Dropdown component | Not Started | |
-| Create QuestionCard component | Not Started | Per UI/UX Guidelines |
-| Create TradeoffSelector component | Not Started | Slider between two options |
-| Create MultiSelect component | Not Started | Checkboxes with tags |
-| Create RankingList component (dnd-kit) | Not Started | Drag to reorder |
-| Create ScaleSlider component | Not Started | For intensity ratings |
-| Create RangeSelector component | Not Started | For financial ranges |
-| Create ProgressIndicator component | Not Started | Shows discovery progress |
-| Create SectionIntro component | Not Started | Explains each section |
-| Create Card component | Not Started | Generic card wrapper |
-| Create Modal component | Not Started | For confirmations |
+| Create Button variants (Primary, Secondary, Ghost) | Complete | src/components/common/Button.tsx |
+| Create Input components (Text, Number, Date) | Complete | src/components/common/Input.tsx (includes TextArea) |
+| Create Select/Dropdown component | Complete | src/components/common/Select.tsx |
+| Create QuestionCard component | Complete | src/components/common/QuestionCard.tsx |
+| Create TradeoffSelector component | Complete | src/components/common/TradeoffSelector.tsx |
+| Create MultiSelect component | Complete | src/components/common/MultiSelect.tsx |
+| Create RankingList component (dnd-kit) | Complete | src/components/common/RankingList.tsx |
+| Create ScaleSlider component | Complete | src/components/common/ScaleSlider.tsx (includes LikertScale) |
+| Create RangeSelector component | Complete | src/components/common/RangeSelector.tsx (includes FinancialRangeSelector) |
+| Create ProgressIndicator component | Complete | src/components/common/ProgressIndicator.tsx (includes SimpleProgress) |
+| Create SectionIntro component | Complete | src/components/common/SectionIntro.tsx |
+| Create Card component | Complete | src/components/common/Card.tsx |
+| Create Modal component | Complete | src/components/common/Modal.tsx
 
 ---
 
@@ -317,6 +317,7 @@ prettier
 |------|-------|----------------|------------|
 | 2026-01-26 | Phase 0 | Project scaffolding complete. Vite, React, TypeScript, Tailwind v4, all dependencies installed, basic routing with landing page and placeholder pages for consumer/advisor modes. | Start Phase 1: Create TypeScript type definitions |
 | 2026-01-26 | Phase 1 | All TypeScript types created (11 type files in src/types/). All Zustand stores created (userStore, profileStore, clientStore, uiStore). All routes configured with placeholder pages for consumer discovery flow and advisor client management. TypeScript and lint checks pass. | Start Phase 2: Build common UI components |
+| 2026-01-26 | Phase 2 | All 13 common UI components created: Button, Card, Modal, Input (Text/Number/Date/TextArea), Select, MultiSelect, QuestionCard, SectionIntro, ProgressIndicator, TradeoffSelector, ScaleSlider, RangeSelector, RankingList (dnd-kit). All exported via index.ts. TypeScript and lint checks pass. | Start Phase 3: Layout & Navigation Components |
 
 ---
 
