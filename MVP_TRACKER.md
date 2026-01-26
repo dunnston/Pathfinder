@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 3 Complete - Layout & navigation components are done.
+**Current State:** Phase 4 Complete - Advisor mode infrastructure is done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -111,19 +111,27 @@ prettier
 ---
 
 ### Phase 4: Advisor Mode Infrastructure
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Build multi-client management for advisors
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create AdvisorDashboard page | Not Started | Client overview, stats |
-| Create ClientList page | Not Started | All clients with status |
-| Create AddClient flow | Not Started | Create new client profile |
-| Create ClientDetail view | Not Started | Single client's profile access |
-| Create client switching logic | Not Started | Navigate between clients |
-| Create advisor notes field on profiles | Not Started | Per design doc |
-| Implement client search/filter | Not Started | Find clients quickly |
-| Create client status indicators | Not Started | Profile completion % |
+| Create AdvisorDashboard page | Complete | Client overview with stats, recent clients grid |
+| Create ClientList page | Complete | Uses ClientListView with filtering/sorting |
+| Create AddClient flow | Complete | Form with validation, redirects to client detail |
+| Create ClientDetail view | Complete | Discovery progress tracking, section links |
+| Create ClientProfile view | Complete | Profile summary with export functionality |
+| Create ClientDiscovery flow | Complete | Section navigation with progress tracking |
+| Create client switching logic | Complete | Via clientStore getClient/setSelectedClient |
+| Create advisor notes field on profiles | Complete | In AddClient and ClientDiscovery pages |
+| Implement client search/filter | Complete | Via ClientListView with filters/sort |
+| Create client status indicators | Complete | Profile completion %, status badges |
+
+**Additional Changes:**
+- Updated Client type to use single `name` field instead of `firstName`/`lastName`
+- Added `profileCompletion`, `sectionProgress`, `advisorNotes` to Client type
+- Added `DISCOVERY_SECTIONS` constant to types for consistent section data
+- Updated clientStore with `getClient`, `updateSectionProgress` methods
 
 ---
 
@@ -319,6 +327,7 @@ prettier
 | 2026-01-26 | Phase 1 | All TypeScript types created (11 type files in src/types/). All Zustand stores created (userStore, profileStore, clientStore, uiStore). All routes configured with placeholder pages for consumer discovery flow and advisor client management. TypeScript and lint checks pass. | Start Phase 2: Build common UI components |
 | 2026-01-26 | Phase 2 | All 13 common UI components created: Button, Card, Modal, Input (Text/Number/Date/TextArea), Select, MultiSelect, QuestionCard, SectionIntro, ProgressIndicator, TradeoffSelector, ScaleSlider, RangeSelector, RankingList (dnd-kit). All exported via index.ts. TypeScript and lint checks pass. | Start Phase 3: Layout & Navigation Components |
 | 2026-01-26 | Phase 3 | All 9 layout components created: Header (3 variants), Footer (2 variants), ModeSelector, ConsumerLayout, WizardLayout, AdvisorLayout, AdvisorSidebar, ClientCard (2 variants), ClientListView. Fixed Tailwind v4 PostCSS config. TypeScript and lint checks pass. | Start Phase 4: Advisor Mode Infrastructure |
+| 2026-01-26 | Phase 4 | Updated all 6 advisor pages (AdvisorDashboard, ClientList, AddClient, ClientDetail, ClientProfile, ClientDiscovery) to use new layout components. Updated Client type and clientStore. Added DISCOVERY_SECTIONS constant. TypeScript and lint checks pass. | Start Phase 5: Discovery Section 1 - Basic Context |
 
 ---
 

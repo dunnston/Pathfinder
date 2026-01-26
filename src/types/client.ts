@@ -3,58 +3,53 @@
  * Manages multiple client profiles
  */
 
-import type { ProfileStatus } from './profile';
+import type { ProfileSection } from './profile';
 
 /** Client status in advisor's workflow */
 export type ClientStatus =
   | 'active' // Currently working with
-  | 'pending' // Waiting for client action
-  | 'completed' // Profile complete, plan in place
+  | 'pending' // Not started yet
+  | 'completed' // Profile complete
   | 'archived'; // No longer active
+
+/** Section progress tracking */
+export type SectionProgress = Partial<Record<ProfileSection, number>>;
 
 /** Client metadata for advisor view */
 export interface Client {
   id: string;
-  advisorId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email?: string;
   phone?: string;
-  profileId: string;
-  profileStatus: ProfileStatus;
-  clientStatus: ClientStatus;
-  lastContactDate?: Date;
-  nextActionDate?: Date;
-  notes?: string;
+  status: ClientStatus;
+  profileCompletion: number; // 0-1
+  sectionProgress: SectionProgress;
+  advisorNotes?: string;
   tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-/** Summary view of client for list display */
-export interface ClientListItem {
-  id: string;
-  firstName: string;
-  lastName: string;
-  profileStatus: ProfileStatus;
-  clientStatus: ClientStatus;
-  profileCompleteness: number;
-  lastUpdated: Date;
-}
-
 /** Filter options for client list */
 export interface ClientFilters {
   status?: ClientStatus[];
-  profileStatus?: ProfileStatus[];
   searchQuery?: string;
   tags?: string[];
 }
 
 /** Sort options for client list */
-export type ClientSortField = 'name' | 'lastUpdated' | 'profileCompleteness' | 'status';
+export type ClientSortField = 'name' | 'updatedAt' | 'profileCompletion' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
 export interface ClientSortOptions {
   field: ClientSortField;
   direction: SortDirection;
+}
+
+/** Input for creating a new client */
+export interface CreateClientInput {
+  name: string;
+  email?: string;
+  phone?: string;
+  advisorNotes?: string;
 }

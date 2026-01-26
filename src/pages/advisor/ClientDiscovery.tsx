@@ -1,155 +1,219 @@
-/**
- * Client Discovery Page
- * Advisor-guided discovery for a specific client
- */
-
-import { useParams, useNavigate, Navigate, Link } from 'react-router-dom';
-import { useClientStore, useUIStore, SECTION_ORDER, SECTION_INFO } from '@/stores';
-import type { ProfileSection } from '@/types';
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useClientStore } from '@/stores'
+import { AdvisorLayout, AdvisorPage } from '@/components/layout'
+import { Button, Card, CardContent, TextArea } from '@/components/common'
+import { SimpleProgress } from '@/components/common/ProgressIndicator'
+import { DISCOVERY_SECTIONS } from '@/types'
+import type { DiscoverySection } from '@/types'
 
 // Map URL slugs to section IDs
-const SLUG_TO_SECTION: Record<string, ProfileSection> = {
+const SLUG_TO_SECTION: Record<string, string> = {
   'basic-context': 'basicContext',
   'retirement-vision': 'retirementVision',
   'planning-preferences': 'planningPreferences',
   'risk-comfort': 'riskComfort',
   'financial-snapshot': 'financialSnapshot',
-};
+}
 
-// Map section IDs to URL slugs
-const SECTION_TO_SLUG: Record<ProfileSection, string> = {
-  basicContext: 'basic-context',
-  retirementVision: 'retirement-vision',
-  planningPreferences: 'planning-preferences',
-  riskComfort: 'risk-comfort',
-  financialSnapshot: 'financial-snapshot',
-};
+// Get section info by ID
+function getSectionById(sectionId: string): DiscoverySection | undefined {
+  return DISCOVERY_SECTIONS.find((s) => s.id === sectionId)
+}
 
-export function ClientDiscovery() {
-  const { id, section: sectionSlug } = useParams<{ id: string; section: string }>();
-  const navigate = useNavigate();
-  const { clients } = useClientStore();
-  const { completeSection } = useUIStore();
+// Convert section ID to URL slug
+function sectionToSlug(sectionId: string): string {
+  return sectionId.replace(/([A-Z])/g, '-$1').toLowerCase()
+}
 
-  const client = clients.find((c) => c.id === id);
+export function ClientDiscovery(): JSX.Element {
+  const { id, section: sectionSlug } = useParams<{ id: string; section: string }>()
+  const navigate = useNavigate()
+  const { getClient, updateClient, updateSectionProgress } = useClientStore()
+
+  const client = id ? getClient(id) : null
 
   if (!client) {
-    return <Navigate to="/advisor/clients" replace />;
+    return (
+      <AdvisorLayout title="Client Not Found">
+        <AdvisorPage>
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Client not found
+            </h2>
+            <p className="text-gray-500 mb-4">
+              The client you're looking for doesn't exist or has been removed.
+            </p>
+            <Button onClick={() => navigate('/advisor/clients')}>
+              Back to Clients
+            </Button>
+          </div>
+        </AdvisorPage>
+      </AdvisorLayout>
+    )
   }
 
   // Validate section slug
   if (!sectionSlug || !SLUG_TO_SECTION[sectionSlug]) {
-    return <Navigate to={`/advisor/clients/${id}/discovery/basic-context`} replace />;
+    navigate(`/advisor/clients/${id}/discovery/basic-context`, { replace: true })
+    return <></>
   }
 
-  const currentSection = SLUG_TO_SECTION[sectionSlug];
-  const sectionInfo = SECTION_INFO[currentSection];
-  const currentIndex = SECTION_ORDER.indexOf(currentSection);
-  const isFirstSection = currentIndex === 0;
-  const isLastSection = currentIndex === SECTION_ORDER.length - 1;
+  const currentSectionId = SLUG_TO_SECTION[sectionSlug]
+  const currentSection = getSectionById(currentSectionId)
+  const currentIndex = DISCOVERY_SECTIONS.findIndex((s) => s.id === currentSectionId)
+  const isFirstSection = currentIndex === 0
+  const isLastSection = currentIndex === DISCOVERY_SECTIONS.length - 1
 
-  const handleNext = () => {
-    completeSection(currentSection);
+  const handleNext = (): void => {
+    // Mark current section as complete
+    updateSectionProgress(client.id, currentSectionId, 1)
+
+    // Update client status if needed
+    if (client.status === 'pending') {
+      updateClient(client.id, { status: 'active' })
+    }
+
     if (isLastSection) {
-      navigate(`/advisor/clients/${id}/profile`);
+      // Mark client as completed
+      updateClient(client.id, { status: 'completed' })
+      navigate(`/advisor/clients/${id}/profile`)
     } else {
-      const nextSection = SECTION_ORDER[currentIndex + 1];
-      navigate(`/advisor/clients/${id}/discovery/${SECTION_TO_SLUG[nextSection]}`);
+      const nextSection = DISCOVERY_SECTIONS[currentIndex + 1]
+      navigate(`/advisor/clients/${id}/discovery/${sectionToSlug(nextSection.id)}`)
     }
-  };
+  }
 
-  const handlePrevious = () => {
+  const handlePrevious = (): void => {
     if (!isFirstSection) {
-      const prevSection = SECTION_ORDER[currentIndex - 1];
-      navigate(`/advisor/clients/${id}/discovery/${SECTION_TO_SLUG[prevSection]}`);
+      const prevSection = DISCOVERY_SECTIONS[currentIndex - 1]
+      navigate(`/advisor/clients/${id}/discovery/${sectionToSlug(prevSection.id)}`)
     }
-  };
+  }
+
+  const handleSaveAndExit = (): void => {
+    // Mark partial progress on current section
+    const currentProgress = client.sectionProgress[currentSectionId] || 0
+    if (currentProgress < 0.5) {
+      updateSectionProgress(client.id, currentSectionId, 0.5)
+    }
+    navigate(`/advisor/clients/${id}`)
+  }
+
+  if (!currentSection) {
+    return <></>
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="mx-auto max-w-4xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Link
-                to={`/advisor/clients/${id}`}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                ← Back to {client.firstName} {client.lastName}
-              </Link>
-              <p className="mt-1 text-sm font-medium text-gray-900">
-                Discovery: Step {currentIndex + 1} of {SECTION_ORDER.length}
+    <AdvisorLayout
+      title={`Discovery: ${currentSection.title}`}
+      subtitle={`Step ${currentIndex + 1} of ${DISCOVERY_SECTIONS.length}`}
+      headerActions={
+        <Button variant="ghost" onClick={handleSaveAndExit}>
+          Save & Exit
+        </Button>
+      }
+    >
+      <AdvisorPage>
+        {/* Progress indicator */}
+        <div className="mb-6">
+          <SimpleProgress current={currentIndex + 1} total={DISCOVERY_SECTIONS.length} />
+        </div>
+
+        {/* Advisor context banner */}
+        <div className="mb-6 rounded-lg bg-primary/5 border border-primary/20 p-4">
+          <p className="text-sm text-primary">
+            <span className="font-medium">Advisor Mode:</span> You are completing this
+            section for <span className="font-medium">{client.name}</span>
+          </p>
+        </div>
+
+        <Card>
+          <CardContent className="p-8">
+            {/* Section header */}
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
+              <p className="mt-2 text-gray-600">{currentSection.description}</p>
+              <p className="mt-1 text-sm text-gray-400">
+                Estimated time: {currentSection.estimatedMinutes} minutes
               </p>
             </div>
-          </div>
-          <div className="mt-3 h-2 w-full rounded-full bg-gray-200">
-            <div
-              className="h-2 rounded-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${((currentIndex + 1) / SECTION_ORDER.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <div className="rounded-lg bg-white p-8 shadow">
-          {/* Advisor context banner */}
-          <div className="mb-6 rounded-lg bg-blue-50 p-4">
-            <p className="text-sm text-blue-800">
-              <span className="font-medium">Advisor Mode:</span> You are completing this
-              section for <span className="font-medium">{client.firstName} {client.lastName}</span>
-            </p>
-          </div>
+            {/* Section navigation tabs */}
+            <div className="mb-8 flex flex-wrap gap-2">
+              {DISCOVERY_SECTIONS.map((section, index) => {
+                const isActive = section.id === currentSectionId
+                const isCompleted = (client.sectionProgress[section.id] || 0) === 1
+                const slug = sectionToSlug(section.id)
 
-          <h1 className="text-2xl font-bold text-gray-900">{sectionInfo.title}</h1>
-          <p className="mt-2 text-gray-600">{sectionInfo.description}</p>
+                return (
+                  <Link
+                    key={section.id}
+                    to={`/advisor/clients/${client.id}/discovery/${slug}`}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary text-white'
+                        : isCompleted
+                          ? 'bg-success/10 text-success hover:bg-success/20'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span className="w-5 h-5 flex items-center justify-center rounded-full bg-white/20 text-xs">
+                      {isCompleted ? '✓' : index + 1}
+                    </span>
+                    {section.title}
+                  </Link>
+                )
+              })}
+            </div>
 
-          {/* Placeholder for section form */}
-          <div className="mt-8 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-            <p className="text-gray-500">
-              Section form will be implemented in Phase {currentIndex + 5}
-            </p>
-            <p className="mt-2 text-sm text-gray-400">
-              This is a placeholder for the {sectionInfo.title} form fields
-            </p>
-          </div>
+            {/* Placeholder for section form */}
+            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center mb-8">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 font-medium">
+                {currentSection.title} Form
+              </p>
+              <p className="mt-2 text-sm text-gray-400">
+                This form will be implemented in a later phase.
+                For now, you can navigate through sections to test the flow.
+              </p>
+            </div>
 
-          {/* Advisor notes field */}
-          <div className="mt-8">
-            <label className="block text-sm font-medium text-gray-700">
-              Advisor Notes (not visible to client)
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Add notes about this section..."
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
+            {/* Advisor notes field */}
+            <div className="mb-8">
+              <TextArea
+                label="Advisor Notes (not visible to client)"
+                placeholder="Add notes about this section..."
+                rows={3}
+                helperText="These notes will be saved with the client's profile"
+              />
+            </div>
 
-          {/* Navigation */}
-          <div className="mt-8 flex justify-between">
-            <button
-              onClick={handlePrevious}
-              disabled={isFirstSection}
-              className={`rounded-lg px-6 py-2 font-medium ${
-                isFirstSection
-                  ? 'cursor-not-allowed text-gray-400'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Previous
-            </button>
-            <button
-              onClick={handleNext}
-              className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              {isLastSection ? 'Complete' : 'Next'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+            {/* Navigation */}
+            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+              <Button
+                variant="ghost"
+                onClick={handlePrevious}
+                disabled={isFirstSection}
+              >
+                ← Previous
+              </Button>
+
+              <div className="flex items-center gap-3">
+                <Button variant="secondary" onClick={handleSaveAndExit}>
+                  Save & Exit
+                </Button>
+                <Button onClick={handleNext}>
+                  {isLastSection ? 'Complete Discovery' : 'Next →'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </AdvisorPage>
+    </AdvisorLayout>
+  )
 }

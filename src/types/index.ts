@@ -93,12 +93,16 @@ export type {
 export type {
   ClientStatus,
   Client,
-  ClientListItem,
   ClientFilters,
   ClientSortField,
   SortDirection,
   ClientSortOptions,
+  SectionProgress,
+  CreateClientInput,
 } from './client';
+
+// User mode type
+export type UserMode = 'consumer' | 'advisor';
 
 // Discovery types
 export type {
@@ -110,3 +114,5 @@ export type {
   SectionValidationError,
   SectionValidationWarning,
 } from './discovery';
+
+export { DISCOVERY_SECTIONS } from './discovery';
