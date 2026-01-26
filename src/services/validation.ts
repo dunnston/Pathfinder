@@ -495,3 +495,192 @@ export function validateRiskComfort(data: unknown): {
 
   return { success: false, errors }
 }
+
+// ============================================================
+// Section 5: Financial Snapshot Schemas
+// ============================================================
+
+/** Income source type enum */
+export const incomeSourceTypeSchema = z.enum([
+  'salary',
+  'self_employment',
+  'rental',
+  'pension',
+  'social_security',
+  'other',
+])
+
+/** Retirement income type enum */
+export const retirementIncomeTypeSchema = z.enum([
+  'fers_pension',
+  'csrs_pension',
+  'social_security',
+  'tsp_withdrawals',
+  'other_pension',
+  'rental_income',
+  'part_time_work',
+  'other',
+])
+
+/** Account type enum */
+export const accountTypeSchema = z.enum([
+  'tsp_traditional',
+  'tsp_roth',
+  'traditional_ira',
+  'roth_ira',
+  '401k',
+  'taxable_brokerage',
+  'savings',
+  'other',
+])
+
+/** Balance range enum */
+export const balanceRangeSchema = z.enum([
+  'under_10k',
+  '10k_50k',
+  '50k_100k',
+  '100k_250k',
+  '250k_500k',
+  '500k_1m',
+  '1m_2m',
+  'over_2m',
+])
+
+/** Debt type enum */
+export const debtTypeSchema = z.enum([
+  'mortgage',
+  'car',
+  'student_loan',
+  'credit_card',
+  'other',
+])
+
+/** Asset type enum */
+export const assetTypeSchema = z.enum([
+  'primary_home',
+  'rental_property',
+  'business',
+  'vehicle',
+  'other',
+])
+
+/** Reserve location enum */
+export const reserveLocationSchema = z.enum([
+  'savings',
+  'money_market',
+  'mixed',
+  'other',
+])
+
+/** Life insurance type enum */
+export const lifeInsuranceTypeSchema = z.enum([
+  'fegli',
+  'private_term',
+  'private_whole',
+  'mixed',
+])
+
+/** Income source schema */
+export const incomeSourceSchema = z.object({
+  type: incomeSourceTypeSchema,
+  description: z.string(),
+  annualAmount: z.number().min(0),
+  isPrimary: z.boolean(),
+})
+
+/** Expected retirement income schema */
+export const expectedRetirementIncomeSchema = z.object({
+  type: retirementIncomeTypeSchema,
+  estimatedAnnualAmount: z.number().min(0).optional(),
+  startAge: z.number().min(50).max(85).optional(),
+  isGuaranteed: z.boolean(),
+  notes: z.string().optional(),
+})
+
+/** Account summary schema */
+export const accountSummarySchema = z.object({
+  type: accountTypeSchema,
+  approximateBalance: balanceRangeSchema,
+  notes: z.string().optional(),
+})
+
+/** Debt summary schema */
+export const debtSummarySchema = z.object({
+  type: debtTypeSchema,
+  approximateBalance: balanceRangeSchema,
+  yearsRemaining: z.number().min(0).optional(),
+  notes: z.string().optional(),
+})
+
+/** Asset summary schema */
+export const assetSummarySchema = z.object({
+  type: assetTypeSchema,
+  approximateValue: balanceRangeSchema.optional(),
+  notes: z.string().optional(),
+})
+
+/** Emergency reserves schema */
+export const emergencyReservesSchema = z.object({
+  monthsOfExpenses: z.number().min(0),
+  location: reserveLocationSchema,
+})
+
+/** Insurance summary schema */
+export const insuranceSummarySchema = z.object({
+  hasLifeInsurance: z.boolean(),
+  lifeInsuranceType: lifeInsuranceTypeSchema.optional(),
+  hasLongTermCare: z.boolean(),
+  hasDisability: z.boolean(),
+  notes: z.string().optional(),
+})
+
+/** Complete Financial Snapshot schema */
+export const financialSnapshotSchema = z.object({
+  incomeSourcesCurrent: z.array(incomeSourceSchema)
+    .min(1, 'Please add at least one current income source'),
+  incomeSourcesRetirement: z.array(expectedRetirementIncomeSchema)
+    .min(1, 'Please add at least one expected retirement income source'),
+  investmentAccounts: z.array(accountSummarySchema)
+    .min(1, 'Please add at least one investment account'),
+  debts: z.array(debtSummarySchema).default([]),
+  majorAssets: z.array(assetSummarySchema).default([]),
+  emergencyReserves: emergencyReservesSchema,
+  insuranceCoverage: insuranceSummarySchema,
+})
+
+/** Type inferred from the schema */
+export type FinancialSnapshotFormData = z.infer<typeof financialSnapshotSchema>
+
+/** Individual field schemas for Financial Snapshot */
+export const financialSnapshotFieldSchemas = {
+  incomeSourcesCurrent: z.array(incomeSourceSchema).min(1),
+  incomeSourcesRetirement: z.array(expectedRetirementIncomeSchema).min(1),
+  investmentAccounts: z.array(accountSummarySchema).min(1),
+  debts: z.array(debtSummarySchema),
+  majorAssets: z.array(assetSummarySchema),
+  emergencyReserves: emergencyReservesSchema,
+  insuranceCoverage: insuranceSummarySchema,
+}
+
+/**
+ * Validate the complete Financial Snapshot form
+ */
+export function validateFinancialSnapshot(data: unknown): {
+  success: boolean
+  data?: FinancialSnapshotFormData
+  errors?: Record<string, string>
+} {
+  const result = financialSnapshotSchema.safeParse(data)
+
+  if (result.success) {
+    return { success: true, data: result.data }
+  }
+
+  const errors: Record<string, string> = {}
+  for (const error of result.error.errors) {
+    const path = error.path.join('.')
+    errors[path] = error.message
+  }
+
+  return { success: false, errors }
+}

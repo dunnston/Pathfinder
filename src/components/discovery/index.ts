@@ -23,3 +23,9 @@ export { ValueRanking } from './ValueRanking'
 export { RiskComfortForm } from './RiskComfortForm'
 export { ScenarioChoice } from './ScenarioChoice'
 export { TimingFlexibilityFields } from './TimingFlexibilityFields'
+
+// Financial Snapshot (Section 5)
+export { FinancialSnapshotForm } from './FinancialSnapshotForm'
+export { AccountsList } from './AccountsList'
+export { CurrentIncomeList, RetirementIncomeList } from './IncomeSourcesList'
+export { DebtList, AssetList } from './DebtAssetsList'

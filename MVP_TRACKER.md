@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 8 Complete - Risk & Income Comfort discovery section is done.
+**Current State:** Phase 9 Complete - Financial Snapshot discovery section is done. All 5 discovery sections complete!
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -232,20 +232,26 @@ prettier
 ---
 
 ### Phase 9: Discovery Section 5 - Financial Snapshot
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Light financial data collection (ranges, not exact amounts)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create financialSnapshotQuestions data file | Not Started | Account types, debt types |
-| Create AccountsList component | Not Started | Add accounts with ranges |
-| Create DebtSummary component | Not Started | |
-| Create AssetSummary component | Not Started | |
-| Create IncomeSourcesList component | Not Started | Current + expected retirement |
-| Create EmergencyReserves component | Not Started | |
-| Create InsuranceSummary component | Not Started | |
-| Create FinancialSnapshotSection page | Not Started | |
-| Wire up to profileStore | Not Started | |
+| Create financialSnapshotQuestions data file | Complete | src/data/financialSnapshotQuestions.ts - account types, debt types, balance ranges, income options |
+| Create FinancialSnapshotForm component | Complete | src/components/discovery/FinancialSnapshotForm.tsx - main form with all sections |
+| Create AccountsList component | Complete | src/components/discovery/AccountsList.tsx - add/remove investment accounts with balance ranges |
+| Create IncomeSourcesList component | Complete | src/components/discovery/IncomeSourcesList.tsx - CurrentIncomeList and RetirementIncomeList |
+| Create DebtAssetsList component | Complete | src/components/discovery/DebtAssetsList.tsx - DebtList and AssetList components |
+| Add Zod validation schemas | Complete | Added to src/services/validation.ts |
+| Wire up consumer discovery flow | Complete | Updated DiscoverySection.tsx to render FinancialSnapshotForm |
+| Wire up advisor discovery flow | Complete | Updated ClientDiscovery.tsx to render FinancialSnapshotForm |
+
+**New Files Created:**
+- `src/data/financialSnapshotQuestions.ts` - Question config, income source options, account types, balance ranges, debt/asset types, insurance options
+- `src/components/discovery/FinancialSnapshotForm.tsx` - Main form with current income, retirement income, investment accounts, debts, assets, emergency reserves, insurance sections
+- `src/components/discovery/AccountsList.tsx` - Dynamic list for investment accounts with balance range selection and totals
+- `src/components/discovery/IncomeSourcesList.tsx` - CurrentIncomeList and RetirementIncomeList with guaranteed/variable income tracking
+- `src/components/discovery/DebtAssetsList.tsx` - DebtList and AssetList components with balance range selection
 
 ---
 
@@ -358,6 +364,7 @@ prettier
 | 2026-01-26 | Phase 6 | Created RetirementVisionForm with sub-components (ConcernsSelector, LifestylePrioritiesRanking). Added Zod validation schemas for RetirementVision. Created retirementVisionQuestions data file with concerns, flexibility options, lifestyle priorities. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 7: Discovery Section 3 - Planning Preferences |
 | 2026-01-26 | Phase 7 | Created PlanningPreferencesForm with sub-components (TradeoffExercise, ValueRanking). Added Zod validation schemas for PlanningPreferences. Created planningPreferencesQuestions data file with tradeoff pairs, value options, comfort levels. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 8: Discovery Section 4 - Risk & Income Comfort |
 | 2026-01-26 | Phase 8 | Created RiskComfortForm with sub-components (ScenarioChoice, TimingFlexibilityFields). Added Zod validation schemas for RiskComfort. Created riskComfortQuestions data file with scenarios, risk scales, flexibility options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 9: Discovery Section 5 - Financial Snapshot |
+| 2026-01-26 | Phase 9 | Created FinancialSnapshotForm with sub-components (AccountsList, IncomeSourcesList, DebtAssetsList). Added Zod validation schemas for FinancialSnapshot. Created financialSnapshotQuestions data file with account types, balance ranges, income options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. All 5 discovery sections complete! | Start Phase 10: Profile Summary & Classifications |
 
 ---
 
