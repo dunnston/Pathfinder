@@ -3,9 +3,12 @@
  * Renders the appropriate discovery section based on URL param
  */
 
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useUIStore, SECTION_ORDER, SECTION_INFO } from '@/stores';
-import type { ProfileSection } from '@/types';
+import { useParams, useNavigate, Navigate } from 'react-router-dom'
+import { useProfileStore, useUserStore } from '@/stores'
+import { WizardLayout } from '@/components/layout'
+import { BasicContextForm } from '@/components/discovery'
+import { DISCOVERY_SECTIONS } from '@/types'
+import type { ProfileSection, BasicContext } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, ProfileSection> = {
@@ -14,7 +17,7 @@ const SLUG_TO_SECTION: Record<string, ProfileSection> = {
   'planning-preferences': 'planningPreferences',
   'risk-comfort': 'riskComfort',
   'financial-snapshot': 'financialSnapshot',
-};
+}
 
 // Map section IDs to URL slugs
 const SECTION_TO_SLUG: Record<ProfileSection, string> = {
@@ -23,110 +26,129 @@ const SECTION_TO_SLUG: Record<ProfileSection, string> = {
   planningPreferences: 'planning-preferences',
   riskComfort: 'risk-comfort',
   financialSnapshot: 'financial-snapshot',
-};
+}
 
-export function DiscoverySection() {
-  const { section: sectionSlug } = useParams<{ section: string }>();
-  const navigate = useNavigate();
-  const { goToSection, completeSection } = useUIStore();
+export function DiscoverySection(): JSX.Element {
+  const { section: sectionSlug } = useParams<{ section: string }>()
+  const navigate = useNavigate()
+  const { currentProfile, updateSection, initializeProfile } = useProfileStore()
+  const { currentUser } = useUserStore()
+
+  // Initialize profile if needed
+  if (!currentProfile && currentUser) {
+    initializeProfile(currentUser.id)
+  }
 
   // Validate section slug
   if (!sectionSlug || !SLUG_TO_SECTION[sectionSlug]) {
-    return <Navigate to="/consumer/discovery" replace />;
+    return <Navigate to="/consumer/discovery" replace />
   }
 
-  const currentSection = SLUG_TO_SECTION[sectionSlug];
-  const sectionInfo = SECTION_INFO[currentSection];
-  const currentIndex = SECTION_ORDER.indexOf(currentSection);
-  const isFirstSection = currentIndex === 0;
-  const isLastSection = currentIndex === SECTION_ORDER.length - 1;
+  const currentSectionId = SLUG_TO_SECTION[sectionSlug]
+  const currentSection = DISCOVERY_SECTIONS.find((s) => s.id === currentSectionId)
+  const currentIndex = DISCOVERY_SECTIONS.findIndex((s) => s.id === currentSectionId)
+  const isFirstSection = currentIndex === 0
+  const isLastSection = currentIndex === DISCOVERY_SECTIONS.length - 1
 
-  const handleNext = () => {
-    completeSection(currentSection);
+  if (!currentSection) {
+    return <Navigate to="/consumer/discovery" replace />
+  }
+
+  const handleNext = (): void => {
     if (isLastSection) {
-      navigate('/consumer/profile');
+      navigate('/consumer/profile')
     } else {
-      const nextSection = SECTION_ORDER[currentIndex + 1];
-      goToSection(nextSection);
-      navigate(`/consumer/discovery/${SECTION_TO_SLUG[nextSection]}`);
+      const nextSection = DISCOVERY_SECTIONS[currentIndex + 1]
+      navigate(`/consumer/discovery/${SECTION_TO_SLUG[nextSection.id]}`)
     }
-  };
+  }
 
-  const handlePrevious = () => {
+  const handlePrevious = (): void => {
     if (!isFirstSection) {
-      const prevSection = SECTION_ORDER[currentIndex - 1];
-      goToSection(prevSection);
-      navigate(`/consumer/discovery/${SECTION_TO_SLUG[prevSection]}`);
+      const prevSection = DISCOVERY_SECTIONS[currentIndex - 1]
+      navigate(`/consumer/discovery/${SECTION_TO_SLUG[prevSection.id]}`)
     }
-  };
+  }
 
-  const handleSaveAndExit = () => {
-    navigate('/consumer');
-  };
+  const handleSaveAndExit = (): void => {
+    navigate('/consumer')
+  }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Progress Bar */}
-      <div className="bg-white shadow">
-        <div className="mx-auto max-w-4xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Step {currentIndex + 1} of {SECTION_ORDER.length}
+  // Handle section-specific form saves
+  const handleBasicContextSave = (data: BasicContext): void => {
+    updateSection('basicContext', data)
+    handleNext()
+  }
+
+  const handleBasicContextAutoSave = (data: Partial<BasicContext>): void => {
+    updateSection('basicContext', data)
+  }
+
+  // Render section-specific form
+  const renderSectionContent = (): JSX.Element => {
+    switch (currentSectionId) {
+      case 'basicContext':
+        return (
+          <BasicContextForm
+            initialData={currentProfile?.basicContext}
+            onSave={handleBasicContextSave}
+            onAutoSave={handleBasicContextAutoSave}
+            isAdvisorMode={false}
+          />
+        )
+
+      // Placeholder for other sections
+      case 'retirementVision':
+      case 'planningPreferences':
+      case 'riskComfort':
+      case 'financialSnapshot':
+        return (
+          <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
-            <button
-              onClick={handleSaveAndExit}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Save & Exit
-            </button>
-          </div>
-          <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
-            <div
-              className="h-2 rounded-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${((currentIndex + 1) / SECTION_ORDER.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Section Content */}
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <div className="rounded-lg bg-white p-8 shadow">
-          <h1 className="text-2xl font-bold text-gray-900">{sectionInfo.title}</h1>
-          <p className="mt-2 text-gray-600">{sectionInfo.description}</p>
-
-          {/* Placeholder for section form */}
-          <div className="mt-8 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-            <p className="text-gray-500">
-              Section form will be implemented in Phase {currentIndex + 5}
+            <p className="text-gray-500 font-medium">
+              {currentSection.title} Form
             </p>
             <p className="mt-2 text-sm text-gray-400">
-              This is a placeholder for the {sectionInfo.title} form fields
+              This form will be implemented in a later phase.
+              For now, you can navigate through sections to test the flow.
             </p>
           </div>
+        )
 
-          {/* Navigation */}
-          <div className="mt-8 flex justify-between">
-            <button
-              onClick={handlePrevious}
-              disabled={isFirstSection}
-              className={`rounded-lg px-6 py-2 font-medium ${
-                isFirstSection
-                  ? 'cursor-not-allowed text-gray-400'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Previous
-            </button>
-            <button
-              onClick={handleNext}
-              className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              {isLastSection ? 'Complete' : 'Next'}
-            </button>
-          </div>
+      default:
+        return <div>Unknown section</div>
+    }
+  }
+
+  return (
+    <WizardLayout
+      title={currentSection.title}
+      currentStep={currentIndex + 1}
+      totalSteps={DISCOVERY_SECTIONS.length}
+      onBack={isFirstSection ? undefined : handlePrevious}
+      onNext={currentSectionId === 'basicContext' ? undefined : handleNext}
+      onSkip={handleSaveAndExit}
+      nextLabel={isLastSection ? 'Complete' : 'Continue'}
+      showSkip={true}
+      skipLabel="Save & Exit"
+      isNextDisabled={false}
+    >
+      <div className="space-y-6">
+        {/* Section intro */}
+        <div className="text-center mb-8">
+          <p className="text-gray-600">{currentSection.description}</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Estimated time: {currentSection.estimatedMinutes} minutes
+          </p>
         </div>
+
+        {/* Section form */}
+        {renderSectionContent()}
       </div>
-    </div>
-  );
+    </WizardLayout>
+  )
 }

@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 4 Complete - Advisor mode infrastructure is done.
+**Current State:** Phase 5 Complete - Basic Context discovery section is done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -136,20 +136,29 @@ prettier
 ---
 
 ### Phase 5: Discovery Section 1 - Basic Context
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Capture personal and employment information
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create basicContextQuestions data file | Not Started | src/data/basicContextQuestions.ts |
-| Create BasicContextForm component | Not Started | Form with validation |
-| Create FederalEmployeeFields sub-component | Not Started | Conditional fields |
-| Create SpouseFields sub-component | Not Started | Conditional fields |
-| Create DependentsList sub-component | Not Started | Dynamic add/remove |
-| Create BasicContextSection page | Not Started | src/pages/discovery/ |
-| Add Zod validation schema | Not Started | |
-| Wire up to profileStore | Not Started | |
-| Add mode-aware language (you vs client) | Not Started | |
+| Create basicContextQuestions data file | Complete | src/data/basicContextQuestions.ts - includes options, labels, mode-aware text |
+| Create BasicContextForm component | Complete | src/components/discovery/BasicContextForm.tsx |
+| Create FederalEmployeeFields sub-component | Complete | src/components/discovery/FederalEmployeeFields.tsx |
+| Create SpouseFields sub-component | Complete | src/components/discovery/SpouseFields.tsx |
+| Create DependentsList sub-component | Complete | src/components/discovery/DependentsList.tsx - dynamic add/remove |
+| Create BasicContextSection page | Complete | Updated src/pages/consumer/DiscoverySection.tsx |
+| Add Zod validation schema | Complete | src/services/validation.ts |
+| Wire up to profileStore | Complete | Both consumer and advisor flows use profileStore |
+| Add mode-aware language (you vs client) | Complete | getQuestionLabel() supports isAdvisorMode flag |
+
+**New Files Created:**
+- `src/data/basicContextQuestions.ts` - Question config, options for selects, mode-aware labels
+- `src/services/validation.ts` - Zod schemas for BasicContext validation
+- `src/components/discovery/BasicContextForm.tsx` - Main form component
+- `src/components/discovery/FederalEmployeeFields.tsx` - Federal employee conditional fields
+- `src/components/discovery/SpouseFields.tsx` - Spouse/partner conditional fields
+- `src/components/discovery/DependentsList.tsx` - Dynamic dependents list
+- `src/components/discovery/index.ts` - Component exports
 
 ---
 
@@ -328,6 +337,7 @@ prettier
 | 2026-01-26 | Phase 2 | All 13 common UI components created: Button, Card, Modal, Input (Text/Number/Date/TextArea), Select, MultiSelect, QuestionCard, SectionIntro, ProgressIndicator, TradeoffSelector, ScaleSlider, RangeSelector, RankingList (dnd-kit). All exported via index.ts. TypeScript and lint checks pass. | Start Phase 3: Layout & Navigation Components |
 | 2026-01-26 | Phase 3 | All 9 layout components created: Header (3 variants), Footer (2 variants), ModeSelector, ConsumerLayout, WizardLayout, AdvisorLayout, AdvisorSidebar, ClientCard (2 variants), ClientListView. Fixed Tailwind v4 PostCSS config. TypeScript and lint checks pass. | Start Phase 4: Advisor Mode Infrastructure |
 | 2026-01-26 | Phase 4 | Updated all 6 advisor pages (AdvisorDashboard, ClientList, AddClient, ClientDetail, ClientProfile, ClientDiscovery) to use new layout components. Updated Client type and clientStore. Added DISCOVERY_SECTIONS constant. TypeScript and lint checks pass. | Start Phase 5: Discovery Section 1 - Basic Context |
+| 2026-01-26 | Phase 5 | Created BasicContextForm with all sub-components (FederalEmployeeFields, SpouseFields, DependentsList). Added Zod validation schemas. Created basicContextQuestions data file with mode-aware labels. Wired up consumer DiscoverySection and advisor ClientDiscovery to use form. TypeScript and lint checks pass. | Start Phase 6: Discovery Section 2 - Retirement Vision |
 
 ---
 
