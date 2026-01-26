@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 5 Complete - Basic Context discovery section is done.
+**Current State:** Phase 6 Complete - Retirement Vision discovery section is done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -163,20 +163,25 @@ prettier
 ---
 
 ### Phase 6: Discovery Section 2 - Retirement Vision
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Capture retirement goals, concerns, and priorities
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create retirementVisionQuestions data file | Not Started | Include concerns list, prompts |
-| Create VisionDescriptionPrompt component | Not Started | Open text with guidance |
-| Create ConcernsSelector component | Not Started | Multi-select with severity |
-| Create OutcomesList component | Not Started | Must-have vs Nice-to-have |
-| Create FlexibilitySlider component | Not Started | |
-| Create LifestylePrioritiesRanking component | Not Started | dnd-kit ranking |
-| Create RetirementVisionSection page | Not Started | |
-| Add validation and tagging logic | Not Started | Map responses to tags |
-| Wire up to profileStore | Not Started | |
+| Create retirementVisionQuestions data file | Complete | src/data/retirementVisionQuestions.ts - includes concerns, flexibility options, prompts |
+| Create RetirementVisionForm component | Complete | src/components/discovery/RetirementVisionForm.tsx - main form with all fields |
+| Create ConcernsSelector component | Complete | src/components/discovery/ConcernsSelector.tsx - multi-select with severity rating |
+| Create LifestylePrioritiesRanking component | Complete | src/components/discovery/LifestylePrioritiesRanking.tsx - @dnd-kit drag-and-drop ranking |
+| Add Zod validation schemas | Complete | Added to src/services/validation.ts |
+| Wire up consumer discovery flow | Complete | Updated DiscoverySection.tsx to render RetirementVisionForm |
+| Wire up advisor discovery flow | Complete | Updated ClientDiscovery.tsx to render RetirementVisionForm |
+| Add mode-aware language (you vs client) | Complete | getQuestionLabel() supports isAdvisorMode flag |
+
+**New Files Created:**
+- `src/data/retirementVisionQuestions.ts` - Question config, flexibility options, concern options, lifestyle priorities, vision prompts
+- `src/components/discovery/RetirementVisionForm.tsx` - Main form component with timeline, vision, concerns, outcomes, priorities sections
+- `src/components/discovery/ConcernsSelector.tsx` - Multi-select for retirement concerns with severity levels
+- `src/components/discovery/LifestylePrioritiesRanking.tsx` - Drag-and-drop ranking with @dnd-kit
 
 ---
 
@@ -338,6 +343,7 @@ prettier
 | 2026-01-26 | Phase 3 | All 9 layout components created: Header (3 variants), Footer (2 variants), ModeSelector, ConsumerLayout, WizardLayout, AdvisorLayout, AdvisorSidebar, ClientCard (2 variants), ClientListView. Fixed Tailwind v4 PostCSS config. TypeScript and lint checks pass. | Start Phase 4: Advisor Mode Infrastructure |
 | 2026-01-26 | Phase 4 | Updated all 6 advisor pages (AdvisorDashboard, ClientList, AddClient, ClientDetail, ClientProfile, ClientDiscovery) to use new layout components. Updated Client type and clientStore. Added DISCOVERY_SECTIONS constant. TypeScript and lint checks pass. | Start Phase 5: Discovery Section 1 - Basic Context |
 | 2026-01-26 | Phase 5 | Created BasicContextForm with all sub-components (FederalEmployeeFields, SpouseFields, DependentsList). Added Zod validation schemas. Created basicContextQuestions data file with mode-aware labels. Wired up consumer DiscoverySection and advisor ClientDiscovery to use form. TypeScript and lint checks pass. | Start Phase 6: Discovery Section 2 - Retirement Vision |
+| 2026-01-26 | Phase 6 | Created RetirementVisionForm with sub-components (ConcernsSelector, LifestylePrioritiesRanking). Added Zod validation schemas for RetirementVision. Created retirementVisionQuestions data file with concerns, flexibility options, lifestyle priorities. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 7: Discovery Section 3 - Planning Preferences |
 
 ---
 
