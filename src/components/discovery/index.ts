@@ -18,3 +18,8 @@ export { LifestylePrioritiesRanking } from './LifestylePrioritiesRanking'
 export { PlanningPreferencesForm } from './PlanningPreferencesForm'
 export { TradeoffExercise } from './TradeoffExercise'
 export { ValueRanking } from './ValueRanking'
+
+// Risk & Income Comfort (Section 4)
+export { RiskComfortForm } from './RiskComfortForm'
+export { ScenarioChoice } from './ScenarioChoice'
+export { TimingFlexibilityFields } from './TimingFlexibilityFields'

@@ -4,9 +4,9 @@ import { useClientStore, useProfileStore } from '@/stores'
 import { AdvisorLayout, AdvisorPage } from '@/components/layout'
 import { Button, Card, CardContent, TextArea } from '@/components/common'
 import { SimpleProgress } from '@/components/common/ProgressIndicator'
-import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm } from '@/components/discovery'
+import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { DiscoverySection, BasicContext, RetirementVision, PlanningPreferences } from '@/types'
+import type { DiscoverySection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, string> = {
@@ -141,6 +141,15 @@ export function ClientDiscovery(): JSX.Element {
     updateSection('planningPreferences', data)
   }
 
+  const handleRiskComfortSave = (data: RiskComfort): void => {
+    updateSection('riskComfort', data)
+    handleNext()
+  }
+
+  const handleRiskComfortAutoSave = (data: Partial<RiskComfort>): void => {
+    updateSection('riskComfort', data)
+  }
+
   // Render section-specific form
   const renderSectionContent = (): JSX.Element => {
     switch (currentSectionId) {
@@ -176,8 +185,18 @@ export function ClientDiscovery(): JSX.Element {
           />
         )
 
-      // Placeholder for other sections
       case 'riskComfort':
+        return (
+          <RiskComfortForm
+            initialData={currentProfile?.riskComfort}
+            onSave={handleRiskComfortSave}
+            onAutoSave={handleRiskComfortAutoSave}
+            isAdvisorMode={true}
+            clientName={client.name}
+          />
+        )
+
+      // Placeholder for other sections
       case 'financialSnapshot':
         return (
           <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
