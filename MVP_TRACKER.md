@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 6 Complete - Retirement Vision discovery section is done.
+**Current State:** Phase 7 Complete - Planning Preferences discovery section is done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -186,19 +186,25 @@ prettier
 ---
 
 ### Phase 7: Discovery Section 3 - Planning Preferences
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Understand decision-making style and complexity tolerance
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create planningPreferencesQuestions data file | Not Started | Tradeoff pairs, value list |
-| Create TradeoffExercise component | Not Started | Series of A vs B choices |
-| Create ValueRanking component | Not Started | dnd-kit drag to rank |
-| Create PreferenceScale component | Not Started | Agreement scales |
-| Create PlanningPreferencesSection page | Not Started | |
-| Add scoring logic for complexity tolerance | Not Started | |
-| Add advisor involvement preference calc | Not Started | |
-| Wire up to profileStore | Not Started | |
+| Create planningPreferencesQuestions data file | Complete | src/data/planningPreferencesQuestions.ts - tradeoff pairs, value options, comfort levels |
+| Create PlanningPreferencesForm component | Complete | src/components/discovery/PlanningPreferencesForm.tsx - main form with all preference fields |
+| Create TradeoffExercise component | Complete | src/components/discovery/TradeoffExercise.tsx - 5-point scale A vs B choices |
+| Create ValueRanking component | Complete | src/components/discovery/ValueRanking.tsx - @dnd-kit drag-and-drop ranking |
+| Add Zod validation schemas | Complete | Added to src/services/validation.ts |
+| Wire up consumer discovery flow | Complete | Updated DiscoverySection.tsx to render PlanningPreferencesForm |
+| Wire up advisor discovery flow | Complete | Updated ClientDiscovery.tsx to render PlanningPreferencesForm |
+| Add mode-aware language (you vs client) | Complete | getQuestionLabel() supports isAdvisorMode flag |
+
+**New Files Created:**
+- `src/data/planningPreferencesQuestions.ts` - Question config, complexity tolerance, comfort levels, involvement options, decision styles, tradeoff pairs, values list
+- `src/components/discovery/PlanningPreferencesForm.tsx` - Main form component with complexity, decision style, values ranking, tradeoffs sections
+- `src/components/discovery/TradeoffExercise.tsx` - Interactive A vs B preference selector with 5-point scale
+- `src/components/discovery/ValueRanking.tsx` - Drag-and-drop value ranking with @dnd-kit
 
 ---
 
@@ -344,6 +350,7 @@ prettier
 | 2026-01-26 | Phase 4 | Updated all 6 advisor pages (AdvisorDashboard, ClientList, AddClient, ClientDetail, ClientProfile, ClientDiscovery) to use new layout components. Updated Client type and clientStore. Added DISCOVERY_SECTIONS constant. TypeScript and lint checks pass. | Start Phase 5: Discovery Section 1 - Basic Context |
 | 2026-01-26 | Phase 5 | Created BasicContextForm with all sub-components (FederalEmployeeFields, SpouseFields, DependentsList). Added Zod validation schemas. Created basicContextQuestions data file with mode-aware labels. Wired up consumer DiscoverySection and advisor ClientDiscovery to use form. TypeScript and lint checks pass. | Start Phase 6: Discovery Section 2 - Retirement Vision |
 | 2026-01-26 | Phase 6 | Created RetirementVisionForm with sub-components (ConcernsSelector, LifestylePrioritiesRanking). Added Zod validation schemas for RetirementVision. Created retirementVisionQuestions data file with concerns, flexibility options, lifestyle priorities. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 7: Discovery Section 3 - Planning Preferences |
+| 2026-01-26 | Phase 7 | Created PlanningPreferencesForm with sub-components (TradeoffExercise, ValueRanking). Added Zod validation schemas for PlanningPreferences. Created planningPreferencesQuestions data file with tradeoff pairs, value options, comfort levels. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 8: Discovery Section 4 - Risk & Income Comfort |
 
 ---
 

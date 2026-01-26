@@ -271,3 +271,132 @@ export function validateRetirementVision(data: unknown): {
 
   return { success: false, errors }
 }
+
+// ============================================================
+// Section 3: Planning Preferences Schemas
+// ============================================================
+
+/** Tolerance level (1-5 scale) */
+export const toleranceLevelSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+])
+
+/** Comfort level enum */
+export const comfortLevelSchema = z.enum([
+  'very_low',
+  'low',
+  'moderate',
+  'high',
+  'very_high',
+])
+
+/** Involvement level enum */
+export const involvementLevelSchema = z.enum([
+  'diy',
+  'guidance',
+  'collaborative',
+  'delegated',
+])
+
+/** Decision style enum */
+export const decisionStyleSchema = z.enum([
+  'analytical',
+  'intuitive',
+  'consultative',
+  'deliberate',
+])
+
+/** Education preference enum */
+export const educationPreferenceSchema = z.enum([
+  'minimal',
+  'summary',
+  'detailed',
+  'comprehensive',
+])
+
+/** Value type enum */
+export const valueTypeSchema = z.enum([
+  'family_security',
+  'health_peace_of_mind',
+  'freedom_of_time',
+  'enjoyment_experiences',
+  'legacy_giving',
+  'financial_independence',
+  'helping_others',
+  'personal_growth',
+])
+
+/** Value ranking schema */
+export const valueRankingSchema = z.object({
+  value: valueTypeSchema,
+  rank: z.number().min(1).max(8),
+})
+
+/** Tradeoff position enum */
+export const tradeoffPositionSchema = z.enum([
+  'strongly_a',
+  'lean_a',
+  'neutral',
+  'lean_b',
+  'strongly_b',
+])
+
+/** Tradeoff preference schema */
+export const tradeoffPreferenceSchema = z.object({
+  tradeoff: z.string().min(1),
+  preference: tradeoffPositionSchema,
+  optionA: z.string().min(1),
+  optionB: z.string().min(1),
+})
+
+/** Complete Planning Preferences schema */
+export const planningPreferencesSchema = z.object({
+  complexityTolerance: toleranceLevelSchema,
+  financialProductComfort: comfortLevelSchema,
+  advisorInvolvementDesire: involvementLevelSchema,
+  decisionMakingStyle: decisionStyleSchema,
+  educationPreference: educationPreferenceSchema,
+  valuesPriorities: z.array(valueRankingSchema)
+    .min(1, 'Please rank at least one value'),
+  tradeoffPreferences: z.array(tradeoffPreferenceSchema)
+    .min(1, 'Please complete at least one tradeoff'),
+})
+
+/** Type inferred from the schema */
+export type PlanningPreferencesFormData = z.infer<typeof planningPreferencesSchema>
+
+/** Individual field schemas for Planning Preferences */
+export const planningPreferencesFieldSchemas = {
+  complexityTolerance: toleranceLevelSchema,
+  financialProductComfort: comfortLevelSchema,
+  advisorInvolvementDesire: involvementLevelSchema,
+  decisionMakingStyle: decisionStyleSchema,
+  educationPreference: educationPreferenceSchema,
+}
+
+/**
+ * Validate the complete Planning Preferences form
+ */
+export function validatePlanningPreferences(data: unknown): {
+  success: boolean
+  data?: PlanningPreferencesFormData
+  errors?: Record<string, string>
+} {
+  const result = planningPreferencesSchema.safeParse(data)
+
+  if (result.success) {
+    return { success: true, data: result.data }
+  }
+
+  const errors: Record<string, string> = {}
+  for (const error of result.error.errors) {
+    const path = error.path.join('.')
+    errors[path] = error.message
+  }
+
+  return { success: false, errors }
+}
