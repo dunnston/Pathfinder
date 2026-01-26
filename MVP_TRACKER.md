@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 2 Complete - Common UI components are done.
+**Current State:** Phase 3 Complete - Layout & navigation components are done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -93,20 +93,20 @@ prettier
 ---
 
 ### Phase 3: Layout & Navigation Components
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Build mode-specific layouts and navigation
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create ConsumerLayout component | Not Started | Simple header + content |
-| Create AdvisorLayout component | Not Started | Sidebar + header + content |
-| Create AdvisorSidebar component | Not Started | Client list, navigation |
-| Create Header component (mode-aware) | Not Started | Different for each mode |
-| Create WizardLayout component | Not Started | Progress, content, nav buttons |
-| Create Footer component | Not Started | |
-| Create ModeSelector component | Not Started | Switch between modes |
-| Create ClientCard component | Not Started | For advisor client list |
-| Create ClientListView component | Not Started | Advisor's client overview |
+| Create ConsumerLayout component | Complete | src/components/layout/ConsumerLayout.tsx |
+| Create AdvisorLayout component | Complete | src/components/layout/AdvisorLayout.tsx |
+| Create AdvisorSidebar component | Complete | src/components/layout/AdvisorSidebar.tsx |
+| Create Header component (mode-aware) | Complete | src/components/layout/Header.tsx (Header, ConsumerHeader, AdvisorHeader) |
+| Create WizardLayout component | Complete | src/components/layout/WizardLayout.tsx |
+| Create Footer component | Complete | src/components/layout/Footer.tsx (Footer, SimpleFooter) |
+| Create ModeSelector component | Complete | src/components/layout/ModeSelector.tsx |
+| Create ClientCard component | Complete | src/components/layout/ClientCard.tsx (ClientCard, ClientCardCompact) |
+| Create ClientListView component | Complete | src/components/layout/ClientListView.tsx
 
 ---
 
@@ -318,6 +318,7 @@ prettier
 | 2026-01-26 | Phase 0 | Project scaffolding complete. Vite, React, TypeScript, Tailwind v4, all dependencies installed, basic routing with landing page and placeholder pages for consumer/advisor modes. | Start Phase 1: Create TypeScript type definitions |
 | 2026-01-26 | Phase 1 | All TypeScript types created (11 type files in src/types/). All Zustand stores created (userStore, profileStore, clientStore, uiStore). All routes configured with placeholder pages for consumer discovery flow and advisor client management. TypeScript and lint checks pass. | Start Phase 2: Build common UI components |
 | 2026-01-26 | Phase 2 | All 13 common UI components created: Button, Card, Modal, Input (Text/Number/Date/TextArea), Select, MultiSelect, QuestionCard, SectionIntro, ProgressIndicator, TradeoffSelector, ScaleSlider, RangeSelector, RankingList (dnd-kit). All exported via index.ts. TypeScript and lint checks pass. | Start Phase 3: Layout & Navigation Components |
+| 2026-01-26 | Phase 3 | All 9 layout components created: Header (3 variants), Footer (2 variants), ModeSelector, ConsumerLayout, WizardLayout, AdvisorLayout, AdvisorSidebar, ClientCard (2 variants), ClientListView. Fixed Tailwind v4 PostCSS config. TypeScript and lint checks pass. | Start Phase 4: Advisor Mode Infrastructure |
 
 ---
 
