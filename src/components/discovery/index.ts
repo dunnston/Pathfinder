@@ -13,3 +13,8 @@ export { DependentsList } from './DependentsList'
 export { RetirementVisionForm } from './RetirementVisionForm'
 export { ConcernsSelector } from './ConcernsSelector'
 export { LifestylePrioritiesRanking } from './LifestylePrioritiesRanking'
+
+// Planning Preferences (Section 3)
+export { PlanningPreferencesForm } from './PlanningPreferencesForm'
+export { TradeoffExercise } from './TradeoffExercise'
+export { ValueRanking } from './ValueRanking'

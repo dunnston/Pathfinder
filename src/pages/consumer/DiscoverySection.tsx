@@ -7,9 +7,9 @@ import { useEffect } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useProfileStore, useUserStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
-import { BasicContextForm, RetirementVisionForm } from '@/components/discovery'
+import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { ProfileSection, BasicContext, RetirementVision } from '@/types'
+import type { ProfileSection, BasicContext, RetirementVision, PlanningPreferences } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, ProfileSection> = {
@@ -96,6 +96,15 @@ export function DiscoverySection(): JSX.Element {
     updateSection('retirementVision', data)
   }
 
+  const handlePlanningPreferencesSave = (data: PlanningPreferences): void => {
+    updateSection('planningPreferences', data)
+    handleNext()
+  }
+
+  const handlePlanningPreferencesAutoSave = (data: Partial<PlanningPreferences>): void => {
+    updateSection('planningPreferences', data)
+  }
+
   // Render section-specific form
   const renderSectionContent = (): JSX.Element => {
     switch (currentSectionId) {
@@ -119,8 +128,17 @@ export function DiscoverySection(): JSX.Element {
           />
         )
 
-      // Placeholder for other sections
       case 'planningPreferences':
+        return (
+          <PlanningPreferencesForm
+            initialData={currentProfile?.planningPreferences}
+            onSave={handlePlanningPreferencesSave}
+            onAutoSave={handlePlanningPreferencesAutoSave}
+            isAdvisorMode={false}
+          />
+        )
+
+      // Placeholder for other sections
       case 'riskComfort':
       case 'financialSnapshot':
         return (
@@ -151,7 +169,7 @@ export function DiscoverySection(): JSX.Element {
       currentStep={currentIndex + 1}
       totalSteps={DISCOVERY_SECTIONS.length}
       onBack={isFirstSection ? undefined : handlePrevious}
-      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' ? undefined : handleNext}
+      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' || currentSectionId === 'planningPreferences' ? undefined : handleNext}
       onSkip={handleSaveAndExit}
       nextLabel={isLastSection ? 'Complete' : 'Continue'}
       showSkip={true}
