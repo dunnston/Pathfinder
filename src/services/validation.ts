@@ -110,9 +110,6 @@ export const basicContextSchema = z.object({
 /** Type inferred from the schema */
 export type BasicContextFormData = z.infer<typeof basicContextSchema>
 
-/** Partial schema for progressive validation */
-export const basicContextPartialSchema = basicContextSchema.partial()
-
 // ============================================================
 // Form Field Schemas (for individual field validation)
 // ============================================================

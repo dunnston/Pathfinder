@@ -3,6 +3,7 @@
  * Renders the appropriate discovery section based on URL param
  */
 
+import { useEffect } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useProfileStore, useUserStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
@@ -35,9 +36,11 @@ export function DiscoverySection(): JSX.Element {
   const { currentUser } = useUserStore()
 
   // Initialize profile if needed
-  if (!currentProfile && currentUser) {
-    initializeProfile(currentUser.id)
-  }
+  useEffect(() => {
+    if (!currentProfile && currentUser) {
+      initializeProfile(currentUser.id)
+    }
+  }, [currentProfile, currentUser, initializeProfile])
 
   // Validate section slug
   if (!sectionSlug || !SLUG_TO_SECTION[sectionSlug]) {

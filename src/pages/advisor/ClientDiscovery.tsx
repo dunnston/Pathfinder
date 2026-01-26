@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useClientStore, useProfileStore } from '@/stores'
 import { AdvisorLayout, AdvisorPage } from '@/components/layout'
@@ -35,9 +36,11 @@ export function ClientDiscovery(): JSX.Element {
   const client = id ? getClient(id) : null
 
   // Initialize or load profile for this client
-  if (client && (!currentProfile || currentProfile.userId !== client.id)) {
-    initializeProfile(client.id)
-  }
+  useEffect(() => {
+    if (client && (!currentProfile || currentProfile.userId !== client.id)) {
+      initializeProfile(client.id)
+    }
+  }, [client, currentProfile, initializeProfile])
 
   if (!client) {
     return (
