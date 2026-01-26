@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 7 Complete - Planning Preferences discovery section is done.
+**Current State:** Phase 8 Complete - Risk & Income Comfort discovery section is done.
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -209,19 +209,25 @@ prettier
 ---
 
 ### Phase 8: Discovery Section 4 - Risk & Income Comfort
-**Status:** Not Started
+**Status:** Complete
 **Goal:** Assess risk tolerance and income preferences
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create riskComfortQuestions data file | Not Started | Scenarios, scales |
-| Create ScenarioChoice component | Not Started | "What would you do if..." |
-| Create IncomePreferenceScale component | Not Started | Stability vs growth |
-| Create TimingFlexibility component | Not Started | |
-| Create MarketDownturnResponse component | Not Started | |
-| Create RiskComfortSection page | Not Started | |
-| Add scoring for risk indicators | Not Started | |
-| Wire up to profileStore | Not Started | |
+| Create riskComfortQuestions data file | Complete | src/data/riskComfortQuestions.ts - scenarios, scales, options, mode-aware labels |
+| Create RiskComfortForm component | Complete | src/components/discovery/RiskComfortForm.tsx - main form with all risk/income fields |
+| Create ScenarioChoice component | Complete | src/components/discovery/ScenarioChoice.tsx - collapsible scenario-based risk assessment |
+| Create TimingFlexibilityFields component | Complete | src/components/discovery/TimingFlexibilityFields.tsx - retirement timing flexibility inputs |
+| Add Zod validation schemas | Complete | Added to src/services/validation.ts |
+| Wire up consumer discovery flow | Complete | Updated DiscoverySection.tsx to render RiskComfortForm |
+| Wire up advisor discovery flow | Complete | Updated ClientDiscovery.tsx to render RiskComfortForm |
+| Add mode-aware language (you vs client) | Complete | getQuestionLabel() and getScenarioText() support isAdvisorMode flag |
+
+**New Files Created:**
+- `src/data/riskComfortQuestions.ts` - Question config, investment risk options, stability preferences, downturn responses, scenarios with risk scoring, flexibility scale
+- `src/components/discovery/RiskComfortForm.tsx` - Main form component with investment risk, income stability, market response, flexibility slider, scenarios, timing flexibility sections
+- `src/components/discovery/ScenarioChoice.tsx` - Interactive scenario-based questions with collapsible panels and auto-advance
+- `src/components/discovery/TimingFlexibilityFields.tsx` - Retirement timing flexibility fields (delay willingness, max delay years, early retirement, conditions)
 
 ---
 
@@ -351,6 +357,7 @@ prettier
 | 2026-01-26 | Phase 5 | Created BasicContextForm with all sub-components (FederalEmployeeFields, SpouseFields, DependentsList). Added Zod validation schemas. Created basicContextQuestions data file with mode-aware labels. Wired up consumer DiscoverySection and advisor ClientDiscovery to use form. TypeScript and lint checks pass. | Start Phase 6: Discovery Section 2 - Retirement Vision |
 | 2026-01-26 | Phase 6 | Created RetirementVisionForm with sub-components (ConcernsSelector, LifestylePrioritiesRanking). Added Zod validation schemas for RetirementVision. Created retirementVisionQuestions data file with concerns, flexibility options, lifestyle priorities. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 7: Discovery Section 3 - Planning Preferences |
 | 2026-01-26 | Phase 7 | Created PlanningPreferencesForm with sub-components (TradeoffExercise, ValueRanking). Added Zod validation schemas for PlanningPreferences. Created planningPreferencesQuestions data file with tradeoff pairs, value options, comfort levels. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 8: Discovery Section 4 - Risk & Income Comfort |
+| 2026-01-26 | Phase 8 | Created RiskComfortForm with sub-components (ScenarioChoice, TimingFlexibilityFields). Added Zod validation schemas for RiskComfort. Created riskComfortQuestions data file with scenarios, risk scales, flexibility options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 9: Discovery Section 5 - Financial Snapshot |
 
 ---
 

@@ -400,3 +400,98 @@ export function validatePlanningPreferences(data: unknown): {
 
   return { success: false, errors }
 }
+
+// ============================================================
+// Section 4: Risk & Income Comfort Schemas
+// ============================================================
+
+/** Stability preference enum */
+export const stabilityPreferenceSchema = z.enum([
+  'strong_stability',
+  'prefer_stability',
+  'balanced',
+  'prefer_growth',
+  'strong_growth',
+])
+
+/** Downturn response enum */
+export const downturnResponseSchema = z.enum([
+  'reduce_spending',
+  'delay_retirement',
+  'work_part_time',
+  'stay_the_course',
+  'unsure',
+])
+
+/** Importance level enum */
+export const importanceLevelSchema = z.enum([
+  'critical',
+  'very_important',
+  'somewhat_important',
+  'not_important',
+])
+
+/** Willingness level enum */
+export const willingnessLevelSchema = z.enum([
+  'very_willing',
+  'somewhat_willing',
+  'reluctant',
+  'unwilling',
+])
+
+/** Timing flexibility schema */
+export const timingFlexibilitySchema = z.object({
+  willingToDelay: z.boolean(),
+  maxDelayYears: z.number().min(0).max(10),
+  willingToRetireEarly: z.boolean(),
+  conditions: z.string().optional(),
+})
+
+/** Complete Risk Comfort schema */
+export const riskComfortSchema = z.object({
+  investmentRiskTolerance: toleranceLevelSchema,
+  incomeStabilityPreference: stabilityPreferenceSchema,
+  marketDownturnResponse: downturnResponseSchema,
+  guaranteedIncomeImportance: importanceLevelSchema,
+  flexibilityVsSecurityPreference: z.number()
+    .min(-5, 'Must be between -5 and 5')
+    .max(5, 'Must be between -5 and 5'),
+  spendingAdjustmentWillingness: willingnessLevelSchema,
+  retirementTimingFlexibility: timingFlexibilitySchema,
+})
+
+/** Type inferred from the schema */
+export type RiskComfortFormData = z.infer<typeof riskComfortSchema>
+
+/** Individual field schemas for Risk Comfort */
+export const riskComfortFieldSchemas = {
+  investmentRiskTolerance: toleranceLevelSchema,
+  incomeStabilityPreference: stabilityPreferenceSchema,
+  marketDownturnResponse: downturnResponseSchema,
+  guaranteedIncomeImportance: importanceLevelSchema,
+  flexibilityVsSecurityPreference: z.number().min(-5).max(5),
+  spendingAdjustmentWillingness: willingnessLevelSchema,
+}
+
+/**
+ * Validate the complete Risk Comfort form
+ */
+export function validateRiskComfort(data: unknown): {
+  success: boolean
+  data?: RiskComfortFormData
+  errors?: Record<string, string>
+} {
+  const result = riskComfortSchema.safeParse(data)
+
+  if (result.success) {
+    return { success: true, data: result.data }
+  }
+
+  const errors: Record<string, string> = {}
+  for (const error of result.error.errors) {
+    const path = error.path.join('.')
+    errors[path] = error.message
+  }
+
+  return { success: false, errors }
+}
