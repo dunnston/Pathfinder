@@ -7,9 +7,9 @@ import { useEffect } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useProfileStore, useUserStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
-import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm } from '@/components/discovery'
+import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm, FinancialSnapshotForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { ProfileSection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort } from '@/types'
+import type { ProfileSection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort, FinancialSnapshot } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, ProfileSection> = {
@@ -114,6 +114,15 @@ export function DiscoverySection(): JSX.Element {
     updateSection('riskComfort', data)
   }
 
+  const handleFinancialSnapshotSave = (data: FinancialSnapshot): void => {
+    updateSection('financialSnapshot', data)
+    handleNext()
+  }
+
+  const handleFinancialSnapshotAutoSave = (data: Partial<FinancialSnapshot>): void => {
+    updateSection('financialSnapshot', data)
+  }
+
   // Render section-specific form
   const renderSectionContent = (): JSX.Element => {
     switch (currentSectionId) {
@@ -157,23 +166,14 @@ export function DiscoverySection(): JSX.Element {
           />
         )
 
-      // Placeholder for other sections
       case 'financialSnapshot':
         return (
-          <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <p className="text-gray-500 font-medium">
-              {currentSection.title} Form
-            </p>
-            <p className="mt-2 text-sm text-gray-400">
-              This form will be implemented in a later phase.
-              For now, you can navigate through sections to test the flow.
-            </p>
-          </div>
+          <FinancialSnapshotForm
+            initialData={currentProfile?.financialSnapshot}
+            onSave={handleFinancialSnapshotSave}
+            onAutoSave={handleFinancialSnapshotAutoSave}
+            isAdvisorMode={false}
+          />
         )
 
       default:
@@ -187,7 +187,7 @@ export function DiscoverySection(): JSX.Element {
       currentStep={currentIndex + 1}
       totalSteps={DISCOVERY_SECTIONS.length}
       onBack={isFirstSection ? undefined : handlePrevious}
-      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' || currentSectionId === 'planningPreferences' || currentSectionId === 'riskComfort' ? undefined : handleNext}
+      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' || currentSectionId === 'planningPreferences' || currentSectionId === 'riskComfort' || currentSectionId === 'financialSnapshot' ? undefined : handleNext}
       onSkip={handleSaveAndExit}
       nextLabel={isLastSection ? 'Complete' : 'Continue'}
       showSkip={true}
