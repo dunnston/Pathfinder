@@ -188,6 +188,7 @@ export function ClientDiscovery(): JSX.Element {
             onAutoSave={handleRetirementVisionAutoSave}
             isAdvisorMode={true}
             clientName={client.name}
+            birthDate={currentProfile?.basicContext?.birthDate}
           />
         )
 

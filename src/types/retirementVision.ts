@@ -48,5 +48,4 @@ export interface RetirementVision {
   mustHaveOutcomes: string[];
   niceToHaveOutcomes: string[];
   lifestylePriorities: LifestylePriority[];
-  financialPurposeStatement?: string;
 }

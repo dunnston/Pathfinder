@@ -7,14 +7,17 @@ import { useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
-import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm, FinancialSnapshotForm } from '@/components/discovery'
+import { BasicContextForm, RetirementVisionForm, ValuesDiscoveryForm, FinancialGoalsForm, FinancialPurposeForm, PlanningPreferencesForm, RiskComfortForm, FinancialSnapshotForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { ProfileSection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort, FinancialSnapshot } from '@/types'
+import type { ProfileSection, BasicContext, RetirementVision, ValuesDiscovery, FinancialGoals, FinancialPurpose, PlanningPreferences, RiskComfort, FinancialSnapshot } from '@/types'
 
 // Map URL slugs to section IDs
 const SLUG_TO_SECTION: Record<string, ProfileSection> = {
   'basic-context': 'basicContext',
   'retirement-vision': 'retirementVision',
+  'values-discovery': 'valuesDiscovery',
+  'financial-goals': 'financialGoals',
+  'financial-purpose': 'financialPurpose',
   'planning-preferences': 'planningPreferences',
   'risk-comfort': 'riskComfort',
   'financial-snapshot': 'financialSnapshot',
@@ -24,6 +27,9 @@ const SLUG_TO_SECTION: Record<string, ProfileSection> = {
 const SECTION_TO_SLUG: Record<ProfileSection, string> = {
   basicContext: 'basic-context',
   retirementVision: 'retirement-vision',
+  valuesDiscovery: 'values-discovery',
+  financialGoals: 'financial-goals',
+  financialPurpose: 'financial-purpose',
   planningPreferences: 'planning-preferences',
   riskComfort: 'risk-comfort',
   financialSnapshot: 'financial-snapshot',
@@ -116,6 +122,33 @@ export function DiscoverySection(): JSX.Element {
     updateSection('retirementVision', data)
   }
 
+  const handleValuesDiscoverySave = (data: ValuesDiscovery): void => {
+    updateSection('valuesDiscovery', data)
+    handleNext()
+  }
+
+  const handleValuesDiscoveryAutoSave = (data: Partial<ValuesDiscovery>): void => {
+    updateSection('valuesDiscovery', data)
+  }
+
+  const handleFinancialGoalsSave = (data: FinancialGoals): void => {
+    updateSection('financialGoals', data)
+    handleNext()
+  }
+
+  const handleFinancialGoalsAutoSave = (data: Partial<FinancialGoals>): void => {
+    updateSection('financialGoals', data)
+  }
+
+  const handleFinancialPurposeSave = (data: FinancialPurpose): void => {
+    updateSection('financialPurpose', data)
+    handleNext()
+  }
+
+  const handleFinancialPurposeAutoSave = (data: Partial<FinancialPurpose>): void => {
+    updateSection('financialPurpose', data)
+  }
+
   const handlePlanningPreferencesSave = (data: PlanningPreferences): void => {
     updateSection('planningPreferences', data)
     handleNext()
@@ -163,6 +196,39 @@ export function DiscoverySection(): JSX.Element {
             onSave={handleRetirementVisionSave}
             onAutoSave={handleRetirementVisionAutoSave}
             isAdvisorMode={false}
+            birthDate={currentProfile?.basicContext?.birthDate}
+          />
+        )
+
+      case 'valuesDiscovery':
+        return (
+          <ValuesDiscoveryForm
+            initialData={currentProfile?.valuesDiscovery}
+            onSave={handleValuesDiscoverySave}
+            onAutoSave={handleValuesDiscoveryAutoSave}
+            isAdvisorMode={false}
+          />
+        )
+
+      case 'financialGoals':
+        return (
+          <FinancialGoalsForm
+            initialData={currentProfile?.financialGoals}
+            onSave={handleFinancialGoalsSave}
+            onAutoSave={handleFinancialGoalsAutoSave}
+            isAdvisorMode={false}
+          />
+        )
+
+      case 'financialPurpose':
+        return (
+          <FinancialPurposeForm
+            initialData={currentProfile?.financialPurpose}
+            valuesData={currentProfile?.valuesDiscovery}
+            goalsData={currentProfile?.financialGoals}
+            onSave={handleFinancialPurposeSave}
+            onAutoSave={handleFinancialPurposeAutoSave}
+            isAdvisorMode={false}
           />
         )
 
@@ -207,7 +273,7 @@ export function DiscoverySection(): JSX.Element {
       currentStep={currentIndex + 1}
       totalSteps={DISCOVERY_SECTIONS.length}
       onBack={isFirstSection ? undefined : handlePrevious}
-      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' || currentSectionId === 'planningPreferences' || currentSectionId === 'riskComfort' || currentSectionId === 'financialSnapshot' ? undefined : handleNext}
+      onNext={currentSectionId === 'basicContext' || currentSectionId === 'retirementVision' || currentSectionId === 'valuesDiscovery' || currentSectionId === 'financialGoals' || currentSectionId === 'financialPurpose' || currentSectionId === 'planningPreferences' || currentSectionId === 'riskComfort' || currentSectionId === 'financialSnapshot' ? undefined : handleNext}
       onSkip={handleSaveAndExit}
       nextLabel={isLastSection ? 'Complete' : 'Continue'}
       showSkip={true}

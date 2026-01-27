@@ -3,7 +3,7 @@
  * Drag-and-drop sortable list for ranking core values
  */
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -112,24 +112,29 @@ export function ValueRanking({
   error,
   isAdvisorMode = false,
 }: ValueRankingProps): JSX.Element {
-  // Initialize with default values if empty
-  const [initialized, setInitialized] = useState(false)
-
-  if (!initialized && value.length === 0) {
-    const defaultValues = VALUE_OPTIONS.map((option, index) => ({
-      value: option.value,
-      rank: index + 1,
-    }))
-    onChange(defaultValues)
-    setInitialized(true)
-  }
-
+  // Initialize sensors first (hooks must be called unconditionally)
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  // Initialize with default values if empty - must be in useEffect to avoid setState during render
+  useEffect(() => {
+    if (value.length === 0) {
+      const defaultValues = VALUE_OPTIONS.map((option, index) => ({
+        value: option.value,
+        rank: index + 1,
+      }))
+      onChange(defaultValues)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show loading while initializing
+  if (value.length === 0) {
+    return <div className="animate-pulse text-gray-400">Loading values...</div>
+  }
 
   const handleDragEnd = (event: DragEndEvent): void => {
     const { active, over } = event

@@ -7,6 +7,9 @@ import type { Flexibility, ConcernType, ConcernSeverity } from '@/types/retireme
 import type { ToleranceLevel, ComfortLevel, InvolvementLevel, DecisionStyle, ValueType } from '@/types/planningPreferences';
 import type { StabilityPreference, DownturnResponse, ImportanceLevel, WillingnessLevel } from '@/types/riskComfort';
 import type { MaritalStatus } from '@/types/basicContext';
+import type { ValueCategory } from '@/types/valuesDiscovery';
+import type { GoalPriority, GoalTimeHorizon, GoalFlexibility } from '@/types/financialGoals';
+import type { PurposeDriver, TradeoffAxis } from '@/types/financialPurpose';
 
 /** Marital status display labels */
 export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
@@ -123,6 +126,62 @@ export const WILLINGNESS_LABELS: Record<WillingnessLevel, string> = {
   somewhat_willing: 'Somewhat Willing',
   reluctant: 'Reluctant',
   unwilling: 'Unwilling',
+};
+
+/** Value category display labels */
+export const VALUE_CATEGORY_LABELS: Record<ValueCategory, string> = {
+  SECURITY: 'Security',
+  FREEDOM: 'Freedom',
+  FAMILY: 'Family',
+  GROWTH: 'Growth',
+  CONTRIBUTION: 'Contribution',
+  PURPOSE: 'Purpose',
+  CONTROL: 'Control',
+  HEALTH: 'Health',
+  QUALITY_OF_LIFE: 'Quality of Life',
+};
+
+/** Goal priority display labels */
+export const GOAL_PRIORITY_LABELS: Record<GoalPriority, string> = {
+  HIGH: 'High Priority',
+  MEDIUM: 'Medium Priority',
+  LOW: 'Low Priority',
+  NA: 'Not Applicable',
+};
+
+/** Goal time horizon display labels */
+export const GOAL_TIME_HORIZON_LABELS: Record<GoalTimeHorizon, string> = {
+  SHORT: 'Short-term (1-3 years)',
+  MID: 'Mid-term (3-7 years)',
+  LONG: 'Long-term (7+ years)',
+  ONGOING: 'Ongoing',
+};
+
+/** Goal flexibility display labels */
+export const GOAL_FLEXIBILITY_LABELS: Record<GoalFlexibility, string> = {
+  FIXED: 'Fixed (must happen)',
+  FLEXIBLE: 'Flexible (can adjust)',
+  DEFERABLE: 'Deferrable (can postpone)',
+};
+
+/** Purpose driver display labels */
+export const PURPOSE_DRIVER_LABELS: Record<PurposeDriver, string> = {
+  PROTECT_FAMILY: 'Protect My Family',
+  FREEDOM_OPTIONS: 'Freedom & Options',
+  STABILITY_PEACE: 'Stability & Peace of Mind',
+  HEALTH_QUALITY: 'Health & Quality of Life',
+  IMPACT_GIVING: 'Impact & Giving',
+  MEANING_PURPOSE: 'Meaning & Purpose',
+  CONTROL_CONFIDENCE: 'Control & Confidence',
+  GROWTH_OPPORTUNITY: 'Growth & Opportunity',
+};
+
+/** Tradeoff axis display labels */
+export const TRADEOFF_AXIS_LABELS: Record<TradeoffAxis, string> = {
+  SECURITY_VS_GROWTH: 'Security vs Growth',
+  FREEDOM_SOONER_VS_CERTAINTY_LATER: 'Freedom Sooner vs Certainty Later',
+  LIFESTYLE_NOW_VS_BUFFER_FIRST: 'Lifestyle Now vs Buffer First',
+  CONTROL_STRUCTURE_VS_FLEXIBILITY: 'Control/Structure vs Flexibility',
 };
 
 /**

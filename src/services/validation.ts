@@ -24,8 +24,16 @@ export const STRING_LIMITS = {
 // Common Validators
 // ============================================================
 
-/** Date for birth year (reasonable range) */
-const birthDate = z.coerce.date().refine(
+/** Date for birth year (reasonable range) - handles both Date objects and strings */
+const birthDate = z.preprocess(
+  (val) => {
+    // Handle Date objects, strings, and null/undefined
+    if (val instanceof Date) return val
+    if (typeof val === 'string' && val) return new Date(val)
+    return val
+  },
+  z.date({ message: 'Please enter a valid birth date' })
+).refine(
   (date) => {
     const year = date.getFullYear()
     const currentYear = new Date().getFullYear()
@@ -71,7 +79,7 @@ export const spouseInfoSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(STRING_LIMITS.NAME, `Maximum ${STRING_LIMITS.NAME} characters`),
   birthDate: birthDate,
   employmentStatus: employmentStatusSchema,
-  hasPension: z.boolean(),
+  hasPension: z.boolean().default(false),
   pensionDetails: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
@@ -84,8 +92,8 @@ export const federalEmployeeInfoSchema = z.object({
   retirementSystem: retirementSystemSchema,
   payGrade: z.string().min(1, 'Pay grade is required').max(20, 'Maximum 20 characters'),
   step: z.number().min(1).max(10),
-  isLawEnforcement: z.boolean(),
-  hasMilitaryService: z.boolean(),
+  isLawEnforcement: z.boolean().default(false),
+  hasMilitaryService: z.boolean().default(false),
   militaryServiceYears: z.number().min(0).max(40).optional(),
 })
 
@@ -93,7 +101,7 @@ export const federalEmployeeInfoSchema = z.object({
 export const dependentSchema = z.object({
   relationship: z.string().min(1, 'Relationship is required').max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
   birthDate: birthDate,
-  financiallyDependent: z.boolean(),
+  financiallyDependent: z.boolean().default(true),
 })
 
 /** Complete Basic Context schema */
@@ -249,7 +257,6 @@ export const retirementVisionSchema = z.object({
   lifestylePriorities: z.array(lifestylePrioritySchema)
     .min(3, 'Please rank at least 3 priorities')
     .max(10, 'Maximum 10 priorities'),
-  financialPurposeStatement: z.string().max(STRING_LIMITS.LONG_TEXT, `Maximum ${STRING_LIMITS.LONG_TEXT} characters`).optional(),
 })
 
 /** Type inferred from the schema */
@@ -703,6 +710,218 @@ export function validateFinancialSnapshot(data: unknown): {
 
   return { success: false, errors }
 }
+
+// ============================================================
+// Values Discovery Schemas
+// ============================================================
+
+/** Value category enum */
+export const valueCategorySchema = z.enum([
+  'SECURITY',
+  'FREEDOM',
+  'FAMILY',
+  'GROWTH',
+  'CONTRIBUTION',
+  'PURPOSE',
+  'CONTROL',
+  'HEALTH',
+  'QUALITY_OF_LIFE',
+])
+
+/** Pile assignment enum */
+export const pileSchema = z.enum(['IMPORTANT', 'UNSURE', 'NOT_IMPORTANT'])
+
+/** Values discovery state enum */
+export const valuesDiscoveryStateSchema = z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'])
+
+/** Tradeoff choice enum */
+export const valuesTradeoffChoiceSchema = z.enum(['A', 'B', 'NEUTRAL'])
+
+/** Tradeoff strength (1-5) */
+export const valuesTradeoffStrengthSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+])
+
+/** Values tradeoff response schema */
+export const valuesTradeoffResponseSchema = z.object({
+  id: z.string().min(1).max(100),
+  categoryA: valueCategorySchema,
+  categoryB: valueCategorySchema,
+  choice: valuesTradeoffChoiceSchema,
+  strength: valuesTradeoffStrengthSchema,
+  createdAt: z.string(),
+})
+
+/** Unsure resolution schema */
+export const unsureResolutionSchema = z.object({
+  cardId: z.string().min(1).max(100),
+  from: z.literal('UNSURE'),
+  to: z.enum(['IMPORTANT', 'NOT_IMPORTANT', 'UNSURE']),
+  answeredAt: z.string(),
+})
+
+/** Complete Values Discovery schema */
+export const valuesDiscoverySchema = z.object({
+  state: valuesDiscoveryStateSchema,
+  piles: z.record(z.string(), pileSchema).default({}),
+  step1CompletedAt: z.string().optional(),
+  unsureResolutions: z.array(unsureResolutionSchema).max(100).default([]),
+  step2CompletedAt: z.string().optional(),
+  top10: z.array(z.string().max(100)).max(10).default([]),
+  top5: z.array(z.string().max(100)).max(5).default([]),
+  step4CompletedAt: z.string().optional(),
+  tradeoffResponses: z.array(valuesTradeoffResponseSchema).max(10).default([]),
+  step5CompletedAt: z.string().optional(),
+  nonNegotiables: z.array(z.string().max(100)).max(3).default([]),
+  step6CompletedAt: z.string().optional(),
+  completedAt: z.string().optional(),
+})
+
+/** Type inferred from the schema */
+export type ValuesDiscoveryFormData = z.infer<typeof valuesDiscoverySchema>
+
+// ============================================================
+// Financial Goals Schemas
+// ============================================================
+
+/** Goal category enum */
+export const goalCategorySchema = z.enum([
+  'LIFESTYLE',
+  'SECURITY_PROTECTION',
+  'FAMILY_LEGACY',
+  'CAREER_GROWTH',
+  'RETIREMENT',
+  'HEALTH',
+  'MAJOR_PURCHASES',
+  'GIVING',
+])
+
+/** Goal priority enum */
+export const goalPrioritySchema = z.enum(['HIGH', 'MEDIUM', 'LOW', 'NA'])
+
+/** Goal time horizon enum */
+export const goalTimeHorizonSchema = z.enum(['SHORT', 'MID', 'LONG', 'ONGOING'])
+
+/** Goal flexibility enum */
+export const goalFlexibilitySchema = z.enum(['FIXED', 'FLEXIBLE', 'DEFERABLE'])
+
+/** Financial goals state enum */
+export const financialGoalsStateSchema = z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'])
+
+/** Goal source enum */
+export const goalSourceSchema = z.enum(['user', 'system'])
+
+/** Financial goal schema */
+export const financialGoalSchema = z.object({
+  id: z.string().min(1).max(100),
+  label: z.string().min(1).max(STRING_LIMITS.SHORT_TEXT),
+  source: goalSourceSchema,
+  priority: goalPrioritySchema,
+  timeHorizon: goalTimeHorizonSchema.optional(),
+  flexibility: goalFlexibilitySchema.optional(),
+  isCorePlanningGoal: z.boolean(),
+  category: goalCategorySchema,
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT).optional(),
+  createdAt: z.string(),
+})
+
+/** Goal tradeoff schema */
+export const goalTradeoffSchema = z.object({
+  goalId1: z.string().min(1).max(100),
+  goalId2: z.string().min(1).max(100),
+  choice: z.enum(['GOAL1', 'GOAL2', 'NEUTRAL']),
+  reasoning: z.string().max(STRING_LIMITS.MEDIUM_TEXT).optional(),
+})
+
+/** Complete Financial Goals schema */
+export const financialGoalsSchema = z.object({
+  state: financialGoalsStateSchema,
+  userGeneratedGoals: z.array(financialGoalSchema).max(20).default([]),
+  phase1CompletedAt: z.string().optional(),
+  systemSelectedGoals: z.array(financialGoalSchema).max(50).default([]),
+  phase2CompletedAt: z.string().optional(),
+  allGoals: z.array(financialGoalSchema).max(70).default([]),
+  phase3CompletedAt: z.string().optional(),
+  phase4CompletedAt: z.string().optional(),
+  tradeoffs: z.array(goalTradeoffSchema).max(20).default([]),
+  phase5CompletedAt: z.string().optional(),
+  coreGoals: z.array(financialGoalSchema).max(10).default([]),
+  phase6CompletedAt: z.string().optional(),
+  completedAt: z.string().optional(),
+})
+
+/** Type inferred from the schema */
+export type FinancialGoalsFormData = z.infer<typeof financialGoalsSchema>
+
+// ============================================================
+// Financial Purpose Schemas
+// ============================================================
+
+/** Purpose driver enum */
+export const purposeDriverSchema = z.enum([
+  'PROTECT_FAMILY',
+  'FREEDOM_OPTIONS',
+  'STABILITY_PEACE',
+  'HEALTH_QUALITY',
+  'IMPACT_GIVING',
+  'MEANING_PURPOSE',
+  'CONTROL_CONFIDENCE',
+  'GROWTH_OPPORTUNITY',
+])
+
+/** Tradeoff axis enum */
+export const tradeoffAxisSchema = z.enum([
+  'SECURITY_VS_GROWTH',
+  'FREEDOM_SOONER_VS_CERTAINTY_LATER',
+  'LIFESTYLE_NOW_VS_BUFFER_FIRST',
+  'CONTROL_STRUCTURE_VS_FLEXIBILITY',
+])
+
+/** Financial purpose state enum */
+export const financialPurposeStateSchema = z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'])
+
+/** Tradeoff anchor schema */
+export const tradeoffAnchorSchema = z.object({
+  axis: tradeoffAxisSchema,
+  lean: z.enum(['A', 'B', 'NEUTRAL']),
+  strength: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+})
+
+/** SoFP draft schema */
+export const sofpDraftSchema = z.object({
+  id: z.string().min(1).max(100),
+  templateId: z.string().min(1).max(100),
+  text: z.string().max(STRING_LIMITS.MEDIUM_TEXT),
+  createdAt: z.string(),
+  editedByUser: z.boolean().optional(),
+})
+
+/** Complete Financial Purpose schema */
+export const financialPurposeSchema = z.object({
+  state: financialPurposeStateSchema,
+  primaryDriver: purposeDriverSchema.optional(),
+  secondaryDriver: purposeDriverSchema.optional(),
+  step2CompletedAt: z.string().optional(),
+  tradeoffAnchors: z.array(tradeoffAnchorSchema).max(10).default([]),
+  step3CompletedAt: z.string().optional(),
+  visionAnchors: z.array(z.string().max(STRING_LIMITS.SHORT_TEXT)).max(5).default([]),
+  step4CompletedAt: z.string().optional(),
+  drafts: z.array(sofpDraftSchema).max(10).default([]),
+  selectedDraftId: z.string().max(100).optional(),
+  step5CompletedAt: z.string().optional(),
+  finalText: z.string().max(STRING_LIMITS.SHORT_TEXT).optional(),
+  step6CompletedAt: z.string().optional(),
+  missingValues: z.array(z.string().max(100)).max(10).optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT).optional(),
+  completedAt: z.string().optional(),
+})
+
+/** Type inferred from the schema */
+export type FinancialPurposeFormData = z.infer<typeof financialPurposeSchema>
 
 // ============================================================
 // Form Utilities

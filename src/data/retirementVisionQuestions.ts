@@ -207,16 +207,6 @@ export const RETIREMENT_VISION_QUESTIONS: Record<string, QuestionConfig> = {
     helpText: 'Drag to reorder from most to least important.',
     required: true,
   },
-  financialPurposeStatement: {
-    id: 'financialPurposeStatement',
-    label: 'Financial Purpose Statement',
-    modeLabels: [
-      'In one sentence, what is your money for in retirement?',
-      "In one sentence, what is the client's money for in retirement?",
-    ],
-    helpText: 'This statement can guide future financial decisions.',
-    required: false,
-  },
 }
 
 /**

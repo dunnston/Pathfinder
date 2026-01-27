@@ -53,11 +53,12 @@ export function DependentsList({
     onChange(updated)
   }
 
-  // Format date for input
-  const formatDateForInput = (date: Date | undefined): string => {
+  // Format date for input (yyyy-MM-dd format required by HTML date input)
+  const formatDateForInput = (date: Date | string | undefined): string => {
     if (!date) return ''
-    if (typeof date === 'string') return date
-    return date.toISOString().split('T')[0]
+    // Handle both Date objects and ISO strings
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toISOString().split('T')[0]
   }
 
   // Calculate age from birth date

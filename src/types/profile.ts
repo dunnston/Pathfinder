@@ -9,6 +9,9 @@ import type { PlanningPreferences } from './planningPreferences';
 import type { RiskComfort } from './riskComfort';
 import type { FinancialSnapshot } from './financialSnapshot';
 import type { SystemClassifications } from './systemClassifications';
+import type { ValuesDiscovery } from './valuesDiscovery';
+import type { FinancialGoals } from './financialGoals';
+import type { FinancialPurpose } from './financialPurpose';
 
 /** Profile completion status */
 export type ProfileStatus =
@@ -24,6 +27,9 @@ export interface FinancialProfile {
   status: ProfileStatus;
   basicContext: BasicContext;
   retirementVision: RetirementVision;
+  valuesDiscovery: ValuesDiscovery;
+  financialGoals: FinancialGoals;
+  financialPurpose: FinancialPurpose;
   planningPreferences: PlanningPreferences;
   riskComfort: RiskComfort;
   financialSnapshot: FinancialSnapshot;
@@ -40,6 +46,9 @@ export interface PartialFinancialProfile {
   status: ProfileStatus;
   basicContext?: Partial<BasicContext>;
   retirementVision?: Partial<RetirementVision>;
+  valuesDiscovery?: Partial<ValuesDiscovery>;
+  financialGoals?: Partial<FinancialGoals>;
+  financialPurpose?: Partial<FinancialPurpose>;
   planningPreferences?: Partial<PlanningPreferences>;
   riskComfort?: Partial<RiskComfort>;
   financialSnapshot?: Partial<FinancialSnapshot>;
@@ -53,6 +62,9 @@ export interface PartialFinancialProfile {
 export type ProfileSection =
   | 'basicContext'
   | 'retirementVision'
+  | 'valuesDiscovery'
+  | 'financialGoals'
+  | 'financialPurpose'
   | 'planningPreferences'
   | 'riskComfort'
   | 'financialSnapshot';

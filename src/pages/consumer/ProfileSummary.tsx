@@ -27,6 +27,11 @@ import {
   getPlanningStageLabel,
 } from '@/services/classification';
 import {
+  generateDiscoveryInsights,
+  getInsightsStatusMessage,
+} from '@/services/discoveryInsightsEngine';
+import { DiscoveryInsightsPanel } from '@/components/discovery';
+import {
   MARITAL_STATUS_LABELS,
   FLEXIBILITY_LABELS,
   CONCERN_LABELS,
@@ -40,6 +45,10 @@ import {
   DOWNTURN_LABELS,
   IMPORTANCE_LABELS,
   WILLINGNESS_LABELS,
+  VALUE_CATEGORY_LABELS,
+  GOAL_PRIORITY_LABELS,
+  GOAL_TIME_HORIZON_LABELS,
+  PURPOSE_DRIVER_LABELS,
   formatDate,
   calculateAge,
   formatBalanceRange,
@@ -48,6 +57,7 @@ import {
   formatDebtType,
   formatAssetType,
 } from '@/services/displayHelpers';
+import { VALUE_CARDS } from '@/data/valueCards';
 
 export function ProfileSummary() {
   const { currentProfile, _hasHydrated } = useProfileStore();
@@ -65,6 +75,27 @@ export function ProfileSummary() {
   const classifications = useMemo(() => {
     if (!currentProfile) return null;
     return generateSystemClassifications(currentProfile);
+  }, [currentProfile]);
+
+  // Generate discovery insights
+  const discoveryInsights = useMemo(() => {
+    if (!currentProfile) return null;
+    return generateDiscoveryInsights({
+      basicContext: currentProfile.basicContext,
+      valuesDiscovery: currentProfile.valuesDiscovery,
+      financialGoals: currentProfile.financialGoals,
+      financialPurpose: currentProfile.financialPurpose,
+    });
+  }, [currentProfile]);
+
+  const insightsStatusMessage = useMemo(() => {
+    if (!currentProfile) return '';
+    return getInsightsStatusMessage({
+      basicContext: currentProfile.basicContext,
+      valuesDiscovery: currentProfile.valuesDiscovery,
+      financialGoals: currentProfile.financialGoals,
+      financialPurpose: currentProfile.financialPurpose,
+    });
   }, [currentProfile]);
 
   // Check if profile has minimum required data
@@ -163,7 +194,7 @@ export function ProfileSummary() {
     );
   }
 
-  const { basicContext, retirementVision, planningPreferences, riskComfort, financialSnapshot } = currentProfile;
+  const { basicContext, retirementVision, valuesDiscovery, financialGoals, financialPurpose, planningPreferences, riskComfort, financialSnapshot } = currentProfile;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -331,7 +362,174 @@ export function ProfileSummary() {
                     }))}
                   />
                 )}
-                <DataRow label="Purpose Statement" value={retirementVision.financialPurposeStatement} />
+              </dl>
+            ) : (
+              <p className="text-gray-500 italic">Not completed</p>
+            )}
+          </ProfileSectionCard>
+
+          {/* Values Discovery Section */}
+          <ProfileSectionCard
+            title="Values Discovery"
+            isComplete={valuesDiscovery?.state === 'COMPLETED'}
+            editLink="/consumer/discovery/values-discovery"
+          >
+            {valuesDiscovery && valuesDiscovery.state === 'COMPLETED' ? (
+              <dl className="divide-y divide-gray-100">
+                {valuesDiscovery.top5 && valuesDiscovery.top5.length > 0 && (
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-500">Top 5 Core Values</dt>
+                    <dd className="mt-2 space-y-2">
+                      {valuesDiscovery.top5.map((cardId, i) => {
+                        const card = VALUE_CARDS.find((c) => c.id === cardId);
+                        return (
+                          <div key={cardId} className="flex items-start gap-2">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-medium">
+                              {i + 1}
+                            </span>
+                            <div>
+                              <span className="font-medium text-gray-900">{card?.title || cardId}</span>
+                              {card?.description && (
+                                <p className="text-sm text-gray-500">{card.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </dd>
+                  </div>
+                )}
+                {valuesDiscovery.nonNegotiables && valuesDiscovery.nonNegotiables.length > 0 && (
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-500">Non-Negotiables</dt>
+                    <dd className="mt-2">
+                      <ul className="space-y-1">
+                        {valuesDiscovery.nonNegotiables.map((cardId) => {
+                          const card = VALUE_CARDS.find((c) => c.id === cardId);
+                          return (
+                            <li key={cardId} className="text-sm text-gray-900 flex items-center gap-2">
+                              <span className="text-amber-500">★</span>
+                              {card?.title || cardId}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </dd>
+                  </div>
+                )}
+                {valuesDiscovery.derived?.dominantCategory && (
+                  <DataRow
+                    label="Dominant Category"
+                    value={VALUE_CATEGORY_LABELS[valuesDiscovery.derived.dominantCategory]}
+                  />
+                )}
+                {valuesDiscovery.derived?.secondaryCategory && (
+                  <DataRow
+                    label="Secondary Category"
+                    value={VALUE_CATEGORY_LABELS[valuesDiscovery.derived.secondaryCategory]}
+                  />
+                )}
+                {valuesDiscovery.derived?.conflictFlags && valuesDiscovery.derived.conflictFlags.length > 0 && (
+                  <DataList label="Potential Value Tensions" items={valuesDiscovery.derived.conflictFlags} />
+                )}
+              </dl>
+            ) : (
+              <p className="text-gray-500 italic">Not completed</p>
+            )}
+          </ProfileSectionCard>
+
+          {/* Financial Goals Section */}
+          <ProfileSectionCard
+            title="Financial Goals"
+            isComplete={financialGoals?.state === 'COMPLETED'}
+            editLink="/consumer/discovery/financial-goals"
+          >
+            {financialGoals && financialGoals.state === 'COMPLETED' ? (
+              <dl className="divide-y divide-gray-100">
+                {financialGoals.coreGoals && financialGoals.coreGoals.length > 0 && (
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-500">Core Planning Goals</dt>
+                    <dd className="mt-2 space-y-3">
+                      {financialGoals.coreGoals.map((goal) => (
+                        <div key={goal.id} className="border-l-2 border-blue-500 pl-3">
+                          <div className="font-medium text-gray-900">{goal.label}</div>
+                          <div className="text-sm text-gray-500 flex flex-wrap gap-2 mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+                              {GOAL_PRIORITY_LABELS[goal.priority]}
+                            </span>
+                            {goal.timeHorizon && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+                                {GOAL_TIME_HORIZON_LABELS[goal.timeHorizon]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+                {financialGoals.allGoals && financialGoals.allGoals.length > 0 && (
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-500">All Goals by Priority</dt>
+                    <dd className="mt-2 space-y-2">
+                      {(['HIGH', 'MEDIUM', 'LOW'] as const).map((priority) => {
+                        const goalsAtPriority = financialGoals.allGoals.filter((g) => g.priority === priority);
+                        if (goalsAtPriority.length === 0) return null;
+                        return (
+                          <div key={priority}>
+                            <span className="text-xs font-medium text-gray-400 uppercase">{priority}</span>
+                            <ul className="mt-1 space-y-1">
+                              {goalsAtPriority.map((goal) => (
+                                <li key={goal.id} className="text-sm text-gray-900">
+                                  • {goal.label}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            ) : (
+              <p className="text-gray-500 italic">Not completed</p>
+            )}
+          </ProfileSectionCard>
+
+          {/* Financial Purpose Section */}
+          <ProfileSectionCard
+            title="Statement of Financial Purpose"
+            isComplete={financialPurpose?.state === 'COMPLETED'}
+            editLink="/consumer/discovery/financial-purpose"
+          >
+            {financialPurpose && financialPurpose.state === 'COMPLETED' ? (
+              <dl className="divide-y divide-gray-100">
+                {financialPurpose.finalText && (
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-500">Your Financial Purpose</dt>
+                    <dd className="mt-2">
+                      <blockquote className="text-gray-900 italic border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r">
+                        "{financialPurpose.finalText}"
+                      </blockquote>
+                    </dd>
+                  </div>
+                )}
+                {financialPurpose.primaryDriver && (
+                  <DataRow
+                    label="Primary Driver"
+                    value={PURPOSE_DRIVER_LABELS[financialPurpose.primaryDriver]}
+                  />
+                )}
+                {financialPurpose.secondaryDriver && (
+                  <DataRow
+                    label="Secondary Driver"
+                    value={PURPOSE_DRIVER_LABELS[financialPurpose.secondaryDriver]}
+                  />
+                )}
+                {financialPurpose.visionAnchors && financialPurpose.visionAnchors.length > 0 && (
+                  <DataList label="Vision Anchors" items={financialPurpose.visionAnchors} />
+                )}
               </dl>
             ) : (
               <p className="text-gray-500 italic">Not completed</p>
@@ -579,6 +777,21 @@ export function ProfileSummary() {
           {classifications && (
             <DecisionWindowsList windows={classifications.upcomingDecisionWindows} />
           )}
+
+          {/* Discovery Insights */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Planning Insights
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">{insightsStatusMessage}</p>
+            {discoveryInsights ? (
+              <DiscoveryInsightsPanel insights={discoveryInsights} />
+            ) : (
+              <p className="text-gray-500 italic">
+                Complete more discovery sections to generate planning insights.
+              </p>
+            )}
+          </Card>
 
           {/* Advisor Notes (if any) */}
           {currentProfile.advisorNotes && (

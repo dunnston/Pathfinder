@@ -3,6 +3,7 @@
  * Series of A vs B choices on a 5-point preference scale
  */
 
+import { useEffect } from 'react'
 import { TRADEOFF_PAIRS } from '@/data/planningPreferencesQuestions'
 import type { TradeoffPreference, TradeoffPosition } from '@/types'
 
@@ -31,16 +32,22 @@ export function TradeoffExercise({
   error,
   isAdvisorMode = false,
 }: TradeoffExerciseProps): JSX.Element {
-  // Initialize preferences if empty
+  // Initialize preferences if empty - must be in useEffect to avoid setState during render
+  useEffect(() => {
+    if (value.length === 0) {
+      const initialPreferences = TRADEOFF_PAIRS.map((pair) => ({
+        tradeoff: pair.id,
+        preference: 'neutral' as TradeoffPosition,
+        optionA: pair.optionA,
+        optionB: pair.optionB,
+      }))
+      onChange(initialPreferences)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show loading while initializing
   if (value.length === 0) {
-    const initialPreferences = TRADEOFF_PAIRS.map((pair) => ({
-      tradeoff: pair.id,
-      preference: 'neutral' as TradeoffPosition,
-      optionA: pair.optionA,
-      optionB: pair.optionB,
-    }))
-    onChange(initialPreferences)
-    return <div className="animate-pulse">Loading...</div>
+    return <div className="animate-pulse text-gray-400">Loading preferences...</div>
   }
 
   const handlePreferenceChange = (tradeoffId: string, position: TradeoffPosition): void => {

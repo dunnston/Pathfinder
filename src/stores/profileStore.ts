@@ -14,6 +14,9 @@ import type {
   PlanningPreferences,
   RiskComfort,
   FinancialSnapshot,
+  ValuesDiscovery,
+  FinancialGoals,
+  FinancialPurpose,
 } from '@/types';
 import { createEncryptedStorage } from '@/services/encryption';
 import { sanitizeObject } from '@/services/sanitization';
@@ -22,6 +25,9 @@ import { sanitizeObject } from '@/services/sanitization';
 type SectionDataMap = {
   basicContext: Partial<BasicContext>;
   retirementVision: Partial<RetirementVision>;
+  valuesDiscovery: Partial<ValuesDiscovery>;
+  financialGoals: Partial<FinancialGoals>;
+  financialPurpose: Partial<FinancialPurpose>;
   planningPreferences: Partial<PlanningPreferences>;
   riskComfort: Partial<RiskComfort>;
   financialSnapshot: Partial<FinancialSnapshot>;
@@ -60,6 +66,10 @@ interface ProfileActions {
   loadClientProfile: (clientId: string) => void;
   // Save the current profile to client-specific storage (advisor mode)
   saveClientProfile: () => void;
+  // Invalidate downstream Values Discovery steps when upstream changes
+  invalidateValuesDiscoveryDownstream: (fromStep: 'piles' | 'top10' | 'top5' | 'tradeoffs') => void;
+  // Invalidate downstream Financial Goals phases when upstream changes
+  invalidateFinancialGoalsDownstream: (fromPhase: 'phase1' | 'phase2' | 'phase3' | 'phase4') => void;
 }
 
 type ProfileStore = ProfileState & ProfileActions;
@@ -227,6 +237,173 @@ export const useProfileStore = create<ProfileStore>()(
           // Silently fail - storage might be full
         }
       },
+
+      /**
+       * Invalidate downstream Values Discovery steps when upstream changes
+       * If Step 1 (piles) changes -> clear top10, top5, tradeoffs, nonNegotiables, derived
+       * If top10 changes -> clear top5, tradeoffs, nonNegotiables, derived
+       * If top5 changes -> clear tradeoffs, nonNegotiables, derived
+       * If tradeoffs changes -> clear derived only (nonNegotiables can stay)
+       */
+      invalidateValuesDiscoveryDownstream: (fromStep) =>
+        set((state) => {
+          if (!state.currentProfile?.valuesDiscovery) return state;
+
+          const current = state.currentProfile.valuesDiscovery;
+          let updated: Partial<ValuesDiscovery> = { ...current };
+
+          switch (fromStep) {
+            case 'piles':
+              // Clear everything downstream of Step 1
+              updated = {
+                ...updated,
+                unsureResolutions: [],
+                step2CompletedAt: undefined,
+                top10: [],
+                top5: [],
+                step4CompletedAt: undefined,
+                tradeoffResponses: [],
+                step5CompletedAt: undefined,
+                nonNegotiables: [],
+                step6CompletedAt: undefined,
+                derived: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+            case 'top10':
+              // Clear top5 and everything downstream
+              updated = {
+                ...updated,
+                top5: [],
+                step4CompletedAt: undefined,
+                tradeoffResponses: [],
+                step5CompletedAt: undefined,
+                nonNegotiables: [],
+                step6CompletedAt: undefined,
+                derived: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+            case 'top5':
+              // Clear tradeoffs, nonNegotiables, and derived
+              updated = {
+                ...updated,
+                tradeoffResponses: [],
+                step5CompletedAt: undefined,
+                nonNegotiables: [],
+                step6CompletedAt: undefined,
+                derived: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+            case 'tradeoffs':
+              // Clear derived only (keep nonNegotiables)
+              updated = {
+                ...updated,
+                derived: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+          }
+
+          return {
+            currentProfile: {
+              ...state.currentProfile,
+              valuesDiscovery: updated,
+              updatedAt: new Date(),
+            },
+            hasUnsavedChanges: true,
+          };
+        }),
+
+      /**
+       * Invalidate downstream Financial Goals phases when upstream changes
+       * If phase1 (free recall) changes -> clear allGoals priorities, time horizons, flexibility, tradeoffs, coreGoals
+       * If phase2 (system cards) changes -> clear allGoals priorities, time horizons, flexibility, tradeoffs, coreGoals
+       * If phase3 (priority sort) changes -> clear time horizons, flexibility, tradeoffs, coreGoals
+       * If phase4 (time horizon) changes -> clear flexibility, tradeoffs, coreGoals
+       */
+      invalidateFinancialGoalsDownstream: (fromPhase) =>
+        set((state) => {
+          if (!state.currentProfile?.financialGoals) return state;
+
+          const current = state.currentProfile.financialGoals;
+          let updated: Partial<FinancialGoals> = { ...current };
+
+          switch (fromPhase) {
+            case 'phase1':
+            case 'phase2':
+              // Clear allGoals attributes and everything downstream
+              updated = {
+                ...updated,
+                allGoals: (updated.allGoals || []).map((g) => ({
+                  ...g,
+                  priority: 'NA' as const,
+                  timeHorizon: undefined,
+                  flexibility: undefined,
+                  isCorePlanningGoal: false,
+                })),
+                tradeoffs: [],
+                coreGoals: [],
+                phase3CompletedAt: undefined,
+                phase4CompletedAt: undefined,
+                phase5CompletedAt: undefined,
+                phase6CompletedAt: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+            case 'phase3':
+              // Clear time horizons, flexibility, tradeoffs, coreGoals
+              updated = {
+                ...updated,
+                allGoals: (updated.allGoals || []).map((g) => ({
+                  ...g,
+                  timeHorizon: undefined,
+                  flexibility: undefined,
+                  isCorePlanningGoal: false,
+                })),
+                tradeoffs: [],
+                coreGoals: [],
+                phase4CompletedAt: undefined,
+                phase5CompletedAt: undefined,
+                phase6CompletedAt: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+            case 'phase4':
+              // Clear flexibility, tradeoffs, coreGoals
+              updated = {
+                ...updated,
+                allGoals: (updated.allGoals || []).map((g) => ({
+                  ...g,
+                  flexibility: undefined,
+                  isCorePlanningGoal: false,
+                })),
+                tradeoffs: [],
+                coreGoals: [],
+                phase5CompletedAt: undefined,
+                phase6CompletedAt: undefined,
+                completedAt: undefined,
+                state: 'IN_PROGRESS',
+              };
+              break;
+          }
+
+          return {
+            currentProfile: {
+              ...state.currentProfile,
+              financialGoals: updated,
+              updatedAt: new Date(),
+            },
+            hasUnsavedChanges: true,
+          };
+        }),
     }),
     {
       name: 'pathfinder-profile',
