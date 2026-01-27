@@ -37,6 +37,7 @@ export function AdvisorLayout({
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isMobileMenuOpen}
+        aria-controls="mobile-sidebar"
       >
         {isMobileMenuOpen ? (
           <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,13 +50,23 @@ export function AdvisorLayout({
         )}
       </button>
 
-      {/* Sidebar - hidden on mobile, shown on md+ */}
-      <AdvisorSidebar
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+      {/* Desktop sidebar - always visible and accessible on md+ */}
+      <div className="hidden md:block">
+        <AdvisorSidebar className="fixed inset-y-0 left-0 z-30" />
+      </div>
+
+      {/* Mobile sidebar - hidden from focus/screen readers when closed */}
+      <div
+        id="mobile-sidebar"
+        className={`md:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
+        aria-hidden={!isMobileMenuOpen}
+        // @ts-expect-error - inert is a valid HTML attribute but not yet in React types
+        inert={!isMobileMenuOpen ? '' : undefined}
+      >
+        <AdvisorSidebar onClose={() => setIsMobileMenuOpen(false)} />
+      </div>
 
       {/* Main content area */}
       <div className="flex-1 md:ml-64 flex flex-col">
