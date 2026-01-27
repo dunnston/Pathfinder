@@ -69,10 +69,10 @@ export function StrategyIndicators({ weights }: StrategyIndicatorsProps) {
         These indicators help guide personalized recommendations based on your preferences and situation.
       </p>
       <div className="space-y-6">
-        {weightConfig.map((config) => (
+        {weightConfig.map(({ key, ...config }) => (
           <WeightIndicator
-            key={config.key}
-            value={weights[config.key]}
+            key={key}
+            value={weights[key]}
             {...config}
           />
         ))}

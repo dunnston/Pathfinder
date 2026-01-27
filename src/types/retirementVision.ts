@@ -41,7 +41,7 @@ export interface LifestylePriority {
 /** Complete retirement vision section */
 export interface RetirementVision {
   targetRetirementAge: number | null;
-  targetRetirementYear: number | null;
+  targetRetirementYear?: number;
   retirementFlexibility: Flexibility;
   visionDescription: string;
   topConcerns: RetirementConcern[];

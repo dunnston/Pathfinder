@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores/profileStore'
 import { Button } from '@/components/common'
 import { WelcomeModal } from '@/components/layout'
-import type { ProfileSection } from '@/types'
+import type { ProfileSection, PartialFinancialProfile } from '@/types'
 
 // Section definitions with routes
 const SECTIONS: { key: ProfileSection; label: string; route: string }[] = [
@@ -13,7 +13,7 @@ const SECTIONS: { key: ProfileSection; label: string; route: string }[] = [
   { key: 'financialSnapshot', label: 'Financial Snapshot', route: '/consumer/discovery/financial-snapshot' },
 ]
 
-function isSectionComplete(profile: ReturnType<typeof useProfileStore>['currentProfile'], section: ProfileSection): boolean {
+function isSectionComplete(profile: PartialFinancialProfile | null, section: ProfileSection): boolean {
   if (!profile) return false
   const data = profile[section]
   if (!data) return false

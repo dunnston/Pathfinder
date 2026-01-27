@@ -50,12 +50,7 @@ export function RiskComfortForm({
     guaranteedIncomeImportance: undefined,
     flexibilityVsSecurityPreference: 0,
     spendingAdjustmentWillingness: undefined,
-    retirementTimingFlexibility: {
-      willingToDelay: undefined,
-      maxDelayYears: 0,
-      willingToRetireEarly: undefined,
-      conditions: '',
-    },
+    retirementTimingFlexibility: undefined,
     scenarioResponses: {},
     ...initialData,
   }))

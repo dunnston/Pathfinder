@@ -6,10 +6,10 @@ import { Button, Card, CardContent, TextArea } from '@/components/common'
 import { SimpleProgress } from '@/components/common/ProgressIndicator'
 import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm, FinancialSnapshotForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
-import type { DiscoverySection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort, FinancialSnapshot } from '@/types'
+import type { DiscoverySection, ProfileSection, BasicContext, RetirementVision, PlanningPreferences, RiskComfort, FinancialSnapshot } from '@/types'
 
 // Map URL slugs to section IDs
-const SLUG_TO_SECTION: Record<string, string> = {
+const SLUG_TO_SECTION: Record<string, ProfileSection> = {
   'basic-context': 'basicContext',
   'retirement-vision': 'retirementVision',
   'planning-preferences': 'planningPreferences',
