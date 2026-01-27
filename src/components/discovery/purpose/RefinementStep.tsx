@@ -14,7 +14,7 @@ interface RefinementStepProps {
   drafts: SoFPDraft[];
   selectedDraftId?: string;
   finalText?: string;
-  valuesData?: ValuesDiscovery;
+  valuesData?: Partial<ValuesDiscovery>;
   onFinalTextChange: (text: string, missingValues?: string[], notes?: string) => void;
   onComplete: () => void;
   onBack: () => void;

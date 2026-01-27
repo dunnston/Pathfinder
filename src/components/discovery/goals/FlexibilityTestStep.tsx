@@ -16,7 +16,7 @@ interface FlexibilityTestStepProps {
   isAdvisorMode?: boolean;
 }
 
-const FLEXIBILITY_OPTIONS: { value: GoalFlexibility; label: string; description: string; color: string }[] = [
+const FLEXIBILITY_OPTIONS: { value: GoalFlexibility; label: string; description: string; color: 'red' | 'amber' | 'green' }[] = [
   {
     value: 'FIXED',
     label: 'Non-negotiable',
@@ -30,7 +30,7 @@ const FLEXIBILITY_OPTIONS: { value: GoalFlexibility; label: string; description:
     color: 'amber',
   },
   {
-    value: 'DEFERABLE',
+    value: 'DEFERRABLE',
     label: 'Would delay if needed',
     description: 'This can be postponed to achieve higher priorities',
     color: 'green',

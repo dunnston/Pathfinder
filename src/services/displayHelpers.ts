@@ -161,7 +161,7 @@ export const GOAL_TIME_HORIZON_LABELS: Record<GoalTimeHorizon, string> = {
 export const GOAL_FLEXIBILITY_LABELS: Record<GoalFlexibility, string> = {
   FIXED: 'Fixed (must happen)',
   FLEXIBLE: 'Flexible (can adjust)',
-  DEFERABLE: 'Deferrable (can postpone)',
+  DEFERRABLE: 'Deferrable (can postpone)',
 };
 
 /** Purpose driver display labels */

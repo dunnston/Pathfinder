@@ -28,10 +28,10 @@ import { getCardById } from '@/data/valueCards';
 
 /** Input data for action generation */
 export interface ActionInput {
-  basicContext?: BasicContext;
-  valuesDiscovery?: ValuesDiscovery;
-  financialGoals?: FinancialGoals;
-  financialPurpose?: FinancialPurpose;
+  basicContext?: Partial<BasicContext>;
+  valuesDiscovery?: Partial<ValuesDiscovery>;
+  financialGoals?: Partial<FinancialGoals>;
+  financialPurpose?: Partial<FinancialPurpose>;
   focusAreas: PlanningFocusRanking;
   strategyProfile: StrategyProfile;
 }
@@ -318,14 +318,30 @@ const ACTION_TEMPLATES: ActionTemplate[] = [
 // HELPER FUNCTIONS
 // ============================================================
 
+/** Calculate age from birth date */
+function calculateAge(birthDate: Date | undefined): number | undefined {
+  if (!birthDate) return undefined;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 /** Get years to retirement */
-function getYearsToRetirement(basicContext?: BasicContext): number | undefined {
-  if (!basicContext?.age || !basicContext?.targetRetirementAge) return undefined;
-  return basicContext.targetRetirementAge - basicContext.age;
+function getYearsToRetirement(basicContext?: Partial<BasicContext>): number | undefined {
+  const age = calculateAge(basicContext?.birthDate);
+  if (age === undefined) return undefined;
+  // Default target retirement age of 65
+  const targetAge = 65;
+  return Math.max(0, targetAge - age);
 }
 
 /** Check if near retirement (within 10 years) */
-function isNearRetirement(basicContext?: BasicContext): boolean {
+function isNearRetirement(basicContext?: Partial<BasicContext>): boolean {
   const years = getYearsToRetirement(basicContext);
   return years !== undefined && years <= 10;
 }
@@ -341,21 +357,21 @@ function isDomainInTopN(
 }
 
 /** Get primary value name for rationale */
-function getPrimaryValueName(valuesDiscovery?: ValuesDiscovery): string {
+function getPrimaryValueName(valuesDiscovery?: Partial<ValuesDiscovery>): string {
   if (!valuesDiscovery?.top5?.[0]) return 'financial security';
   const card = getCardById(valuesDiscovery.top5[0]);
   return card?.title.toLowerCase() || 'financial security';
 }
 
 /** Get primary goal name for rationale */
-function getPrimaryGoalName(financialGoals?: FinancialGoals): string {
-  if (!financialGoals?.goals) return 'your financial goals';
-  const highPriorityGoal = financialGoals.goals.find((g) => g.priority === 'HIGH');
-  return highPriorityGoal?.title || 'your financial goals';
+function getPrimaryGoalName(financialGoals?: Partial<FinancialGoals>): string {
+  if (!financialGoals?.allGoals) return 'your financial goals';
+  const highPriorityGoal = financialGoals.allGoals.find((g) => g.priority === 'HIGH');
+  return highPriorityGoal?.label || 'your financial goals';
 }
 
 /** Check if a value category is present in top values */
-function hasValueCategory(valuesDiscovery?: ValuesDiscovery, category?: string): boolean {
+function hasValueCategory(valuesDiscovery?: Partial<ValuesDiscovery>, category?: string): boolean {
   if (!valuesDiscovery?.top5 || !category) return false;
   for (const cardId of valuesDiscovery.top5) {
     const card = getCardById(cardId);
@@ -365,9 +381,9 @@ function hasValueCategory(valuesDiscovery?: ValuesDiscovery, category?: string):
 }
 
 /** Check if a goal category is high priority */
-function hasHighPriorityGoalCategory(financialGoals?: FinancialGoals, category?: string): boolean {
-  if (!financialGoals?.goals || !category) return false;
-  return financialGoals.goals.some(
+function hasHighPriorityGoalCategory(financialGoals?: Partial<FinancialGoals>, category?: string): boolean {
+  if (!financialGoals?.allGoals || !category) return false;
+  return financialGoals.allGoals.some(
     (g) => g.category === category && g.priority === 'HIGH'
   );
 }
@@ -445,7 +461,7 @@ function buildRationale(
 
 /** Get value connections for an action */
 function getValueConnections(
-  template: ActionTemplate,
+  _template: ActionTemplate,
   input: ActionInput
 ): string[] {
   const connections: string[] = [];
@@ -462,17 +478,17 @@ function getValueConnections(
 
 /** Get goal connections for an action */
 function getGoalConnections(
-  template: ActionTemplate,
+  _template: ActionTemplate,
   input: ActionInput
 ): string[] {
   const connections: string[] = [];
 
-  if (input.financialGoals?.goals) {
-    const highPriorityGoals = input.financialGoals.goals
+  if (input.financialGoals?.allGoals) {
+    const highPriorityGoals = input.financialGoals.allGoals
       .filter((g) => g.priority === 'HIGH')
       .slice(0, 2);
     for (const goal of highPriorityGoals) {
-      connections.push(goal.title);
+      connections.push(goal.label);
     }
   }
 

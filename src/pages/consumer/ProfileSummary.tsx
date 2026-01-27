@@ -473,7 +473,7 @@ export function ProfileSummary() {
                     <dt className="text-sm font-medium text-gray-500">All Goals by Priority</dt>
                     <dd className="mt-2 space-y-2">
                       {(['HIGH', 'MEDIUM', 'LOW'] as const).map((priority) => {
-                        const goalsAtPriority = financialGoals.allGoals.filter((g) => g.priority === priority);
+                        const goalsAtPriority = (financialGoals.allGoals ?? []).filter((g) => g.priority === priority);
                         if (goalsAtPriority.length === 0) return null;
                         return (
                           <div key={priority}>

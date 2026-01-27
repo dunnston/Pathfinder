@@ -9,8 +9,8 @@ import type { FinancialGoals } from '@/types/financialGoals';
 import { VALUE_CARDS } from '@/data/valueCards';
 
 interface ConfirmInputsStepProps {
-  valuesData?: ValuesDiscovery;
-  goalsData?: FinancialGoals;
+  valuesData?: Partial<ValuesDiscovery>;
+  goalsData?: Partial<FinancialGoals>;
   onComplete: () => void;
   isAdvisorMode: boolean;
 }
@@ -27,7 +27,7 @@ export function ConfirmInputsStep({
   const canProceed = hasValues && hasGoals;
 
   // Get top 5 value cards
-  const top5Values = hasValues
+  const top5Values = hasValues && valuesData?.top5
     ? valuesData.top5.map((id) => VALUE_CARDS.find((card) => card.id === id)).filter(Boolean)
     : [];
 

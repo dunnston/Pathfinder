@@ -80,7 +80,8 @@ export function validatePreferences(
 
     return DEFAULT_PREFERENCES;
   } catch (error) {
-    logger.error('Error validating preferences', { error });
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error validating preferences', err);
     return DEFAULT_PREFERENCES;
   }
 }
@@ -141,7 +142,8 @@ export function validateUserState(state: unknown): typeof DEFAULT_USER_STATE {
           : false,
     };
   } catch (error) {
-    logger.error('Error validating user state', { error });
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Error validating user state', err);
     return DEFAULT_USER_STATE;
   }
 }
@@ -184,8 +186,7 @@ export function isCorruptedPreferences(preferences: unknown): boolean {
  */
 export function migratePreferences(
   preferences: unknown,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  version?: number
+  _version?: number
 ): UserPreferences {
   // Currently no migrations needed, but this provides the hook for future use
   // When migrations are needed, use version to determine which migrations to apply

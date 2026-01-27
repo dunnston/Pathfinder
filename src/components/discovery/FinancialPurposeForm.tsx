@@ -21,8 +21,8 @@ type WizardStep = 'intro' | 'confirmInputs' | 'drivers' | 'tradeoffs' | 'visionA
 
 interface FinancialPurposeFormProps {
   initialData?: Partial<FinancialPurpose>;
-  valuesData?: ValuesDiscovery;
-  goalsData?: FinancialGoals;
+  valuesData?: Partial<ValuesDiscovery>;
+  goalsData?: Partial<FinancialGoals>;
   onSave: (data: FinancialPurpose) => void;
   onAutoSave?: (data: Partial<FinancialPurpose>) => void;
   isAdvisorMode?: boolean;

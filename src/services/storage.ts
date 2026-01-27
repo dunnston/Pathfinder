@@ -50,10 +50,7 @@ export async function withRetry<T>(
       lastError = error instanceof Error ? error : new Error(String(error))
 
       if (attempt === maxAttempts) {
-        logger.error('Operation failed after max retries', {
-          attempt,
-          error: lastError.message,
-        })
+        logger.error('Operation failed after max retries', lastError, { attempt })
         throw lastError
       }
 
@@ -89,7 +86,8 @@ export function safeGetItem(key: string): string | null {
   try {
     return localStorage.getItem(key)
   } catch (error) {
-    logger.error('Failed to get item from localStorage', { key, error })
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to get item from localStorage', err, { key })
     return null
   }
 }
@@ -125,7 +123,8 @@ export function safeRemoveItem(key: string): void {
   try {
     localStorage.removeItem(key)
   } catch (error) {
-    logger.error('Failed to remove item from localStorage', { key, error })
+    const err = error instanceof Error ? error : new Error(String(error))
+    logger.error('Failed to remove item from localStorage', err, { key })
   }
 }
 

@@ -73,11 +73,12 @@ export function NotFound(): JSX.Element {
             </svg>
             Go Back
           </Button>
-          <Button asChild>
-            <Link to="/">
-              Return Home
-            </Link>
-          </Button>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center px-5 py-3 text-base font-medium rounded-lg bg-primary text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light min-h-[44px]"
+          >
+            Return Home
+          </Link>
         </div>
 
         {/* Quick Links */}

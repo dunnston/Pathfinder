@@ -27,6 +27,21 @@ export const SECTION_INFO: Record<ProfileSection, { title: string; description: 
     description: 'Goals, concerns, and priorities',
     estimatedMinutes: 8,
   },
+  valuesDiscovery: {
+    title: 'Values Discovery',
+    description: 'Identify what matters most in your financial decisions',
+    estimatedMinutes: 8,
+  },
+  financialGoals: {
+    title: 'Financial Goals',
+    description: 'Define and prioritize your key financial objectives',
+    estimatedMinutes: 10,
+  },
+  financialPurpose: {
+    title: 'Financial Purpose',
+    description: 'Create your statement of financial purpose',
+    estimatedMinutes: 5,
+  },
   planningPreferences: {
     title: 'Planning Preferences',
     description: 'Decision-making style and values',

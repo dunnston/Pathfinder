@@ -31,10 +31,23 @@ import {
 
 /** Input data for discovery insights generation */
 export interface DiscoveryInsightsInput {
-  basicContext?: BasicContext;
-  valuesDiscovery?: ValuesDiscovery;
-  financialGoals?: FinancialGoals;
-  financialPurpose?: FinancialPurpose;
+  basicContext?: Partial<BasicContext>;
+  valuesDiscovery?: Partial<ValuesDiscovery>;
+  financialGoals?: Partial<FinancialGoals>;
+  financialPurpose?: Partial<FinancialPurpose>;
+}
+
+/** Calculate age from birth date */
+function calculateAge(birthDate: Date | undefined): number | undefined {
+  if (!birthDate) return undefined;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
 }
 
 /**
@@ -46,8 +59,10 @@ function calculateCompletionPercentage(input: DiscoveryInsightsInput): number {
 
   // Basic Context (25% weight)
   total += 25;
-  if (input.basicContext?.age) score += 10;
-  if (input.basicContext?.targetRetirementAge) score += 10;
+  const age = calculateAge(input.basicContext?.birthDate);
+  if (age !== undefined) score += 10;
+  // Note: targetRetirementAge not stored in BasicContext, use birthDate as primary indicator
+  if (input.basicContext?.birthDate) score += 10;
   if (input.basicContext?.maritalStatus) score += 5;
 
   // Values Discovery (25% weight)
@@ -59,16 +74,16 @@ function calculateCompletionPercentage(input: DiscoveryInsightsInput): number {
 
   // Financial Goals (25% weight)
   total += 25;
-  if (input.financialGoals?.goals?.length) {
-    const goalsWithPriority = input.financialGoals.goals.filter((g) => g.priority);
+  if (input.financialGoals?.allGoals?.length) {
+    const goalsWithPriority = input.financialGoals.allGoals.filter((g) => g.priority);
     if (goalsWithPriority.length >= 3) score += 15;
     else if (goalsWithPriority.length >= 1) score += 8;
 
-    const goalsWithTimeline = input.financialGoals.goals.filter((g) => g.timeHorizon);
+    const goalsWithTimeline = input.financialGoals.allGoals.filter((g) => g.timeHorizon);
     if (goalsWithTimeline.length >= 3) score += 5;
     else if (goalsWithTimeline.length >= 1) score += 2;
 
-    const goalsWithFlexibility = input.financialGoals.goals.filter((g) => g.flexibility);
+    const goalsWithFlexibility = input.financialGoals.allGoals.filter((g) => g.flexibility);
     if (goalsWithFlexibility.length >= 3) score += 5;
     else if (goalsWithFlexibility.length >= 1) score += 2;
   }
@@ -77,7 +92,7 @@ function calculateCompletionPercentage(input: DiscoveryInsightsInput): number {
   total += 25;
   if (input.financialPurpose?.primaryDriver) score += 10;
   if (input.financialPurpose?.tradeoffAnchors?.length) score += 5;
-  if (input.financialPurpose?.finalStatement) score += 10;
+  if (input.financialPurpose?.finalText) score += 10;
 
   return Math.round((score / total) * 100);
 }
@@ -133,9 +148,9 @@ export function generateDiscoveryInsights(input: DiscoveryInsightsInput): Discov
   // Build input summary
   const inputSummary = {
     hasValues: Boolean(input.valuesDiscovery?.top5?.length),
-    hasGoals: Boolean(input.financialGoals?.goals?.length),
-    hasPurpose: Boolean(input.financialPurpose?.finalStatement),
-    hasBasicContext: Boolean(input.basicContext?.age),
+    hasGoals: Boolean(input.financialGoals?.allGoals?.length),
+    hasPurpose: Boolean(input.financialPurpose?.finalText),
+    hasBasicContext: calculateAge(input.basicContext?.birthDate) !== undefined,
     completionPercentage: calculateCompletionPercentage(input),
   };
 
@@ -171,8 +186,8 @@ export function getInsightsStatusMessage(input: DiscoveryInsightsInput): string 
 export function getMissingDataSuggestions(input: DiscoveryInsightsInput): string[] {
   const suggestions: string[] = [];
 
-  if (!input.basicContext?.age) {
-    suggestions.push('Add your age and retirement target');
+  if (calculateAge(input.basicContext?.birthDate) === undefined) {
+    suggestions.push('Add your birth date for personalized insights');
   }
 
   if (!input.valuesDiscovery?.top5?.length) {
@@ -185,21 +200,21 @@ export function getMissingDataSuggestions(input: DiscoveryInsightsInput): string
     suggestions.push('Identify your non-negotiable values');
   }
 
-  if (!input.financialGoals?.goals?.length) {
+  if (!input.financialGoals?.allGoals?.length) {
     suggestions.push('Add financial goals');
   } else {
-    const goalsWithPriority = input.financialGoals.goals.filter((g) => g.priority);
-    if (goalsWithPriority.length < input.financialGoals.goals.length) {
+    const goalsWithPriority = input.financialGoals.allGoals.filter((g) => g.priority);
+    if (goalsWithPriority.length < input.financialGoals.allGoals.length) {
       suggestions.push('Set priorities for all your goals');
     }
 
-    const goalsWithTimeline = input.financialGoals.goals.filter((g) => g.timeHorizon);
-    if (goalsWithTimeline.length < input.financialGoals.goals.length) {
+    const goalsWithTimeline = input.financialGoals.allGoals.filter((g) => g.timeHorizon);
+    if (goalsWithTimeline.length < input.financialGoals.allGoals.length) {
       suggestions.push('Add time horizons to your goals');
     }
   }
 
-  if (!input.financialPurpose?.finalStatement) {
+  if (!input.financialPurpose?.finalText) {
     suggestions.push('Complete your Statement of Financial Purpose');
   }
 

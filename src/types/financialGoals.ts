@@ -21,7 +21,7 @@ export type GoalPriority = 'HIGH' | 'MEDIUM' | 'LOW' | 'NA';
 export type GoalTimeHorizon = 'SHORT' | 'MID' | 'LONG' | 'ONGOING';
 
 /** Goal flexibility level */
-export type GoalFlexibility = 'FIXED' | 'FLEXIBLE' | 'DEFERABLE';
+export type GoalFlexibility = 'FIXED' | 'FLEXIBLE' | 'DEFERRABLE';
 
 /** Module completion state */
 export type FinancialGoalsState = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';

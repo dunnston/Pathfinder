@@ -26,27 +26,41 @@ import { computeDerivedInsights } from './valuesLogic';
 
 /** Input data for strategy profile generation */
 export interface StrategyProfileInput {
-  basicContext?: BasicContext;
-  valuesDiscovery?: ValuesDiscovery;
-  financialGoals?: FinancialGoals;
-  financialPurpose?: FinancialPurpose;
+  basicContext?: Partial<BasicContext>;
+  valuesDiscovery?: Partial<ValuesDiscovery>;
+  financialGoals?: Partial<FinancialGoals>;
+  financialPurpose?: Partial<FinancialPurpose>;
 }
 
-/** Calculate years until retirement */
-function getYearsToRetirement(basicContext?: BasicContext): number | undefined {
-  if (!basicContext?.age || !basicContext?.targetRetirementAge) {
-    return undefined;
+/** Calculate age from birth date */
+function calculateAge(birthDate: Date | undefined): number | undefined {
+  if (!birthDate) return undefined;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
   }
-  return basicContext.targetRetirementAge - basicContext.age;
+  return age;
+}
+
+/** Calculate years until retirement (estimates based on age, defaults to 65) */
+function getYearsToRetirement(basicContext?: Partial<BasicContext>): number | undefined {
+  const age = calculateAge(basicContext?.birthDate);
+  if (age === undefined) return undefined;
+  // Default target retirement age of 65 if not specified
+  const targetAge = 65;
+  return Math.max(0, targetAge - age);
 }
 
 /** Check if a value category is dominant or present in top values */
 function hasValueCategory(
-  valuesDiscovery: ValuesDiscovery | undefined,
+  valuesDiscovery: Partial<ValuesDiscovery> | undefined,
   category: ValueCategory
 ): boolean {
-  if (!valuesDiscovery) return false;
-  const derived = computeDerivedInsights(valuesDiscovery);
+  if (!valuesDiscovery?.top5) return false;
+  const derived = computeDerivedInsights(valuesDiscovery as ValuesDiscovery);
   return (
     derived.dominantCategory === category ||
     derived.secondaryCategory === category
@@ -55,51 +69,51 @@ function hasValueCategory(
 
 /** Get count of values in a category from top 5 */
 function getTop5CategoryCount(
-  valuesDiscovery: ValuesDiscovery | undefined,
+  valuesDiscovery: Partial<ValuesDiscovery> | undefined,
   category: ValueCategory
 ): number {
-  if (!valuesDiscovery) return 0;
-  const derived = computeDerivedInsights(valuesDiscovery);
+  if (!valuesDiscovery?.top5) return 0;
+  const derived = computeDerivedInsights(valuesDiscovery as ValuesDiscovery);
   return derived.categoryCounts.top5[category] || 0;
 }
 
 /** Count high priority goals */
-function countHighPriorityGoals(goals?: FinancialGoals): number {
-  if (!goals?.goals) return 0;
-  return goals.goals.filter((g) => g.priority === 'HIGH').length;
+function countHighPriorityGoals(goals?: Partial<FinancialGoals>): number {
+  if (!goals?.allGoals) return 0;
+  return goals.allGoals.filter((g) => g.priority === 'HIGH').length;
 }
 
 /** Count goals with specific time horizon */
 function countGoalsByHorizon(
-  goals: FinancialGoals | undefined,
-  horizon: 'SHORT' | 'MEDIUM' | 'LONG' | 'ONGOING'
+  goals: Partial<FinancialGoals> | undefined,
+  horizon: 'SHORT' | 'MID' | 'LONG' | 'ONGOING'
 ): number {
-  if (!goals?.goals) return 0;
-  return goals.goals.filter((g) => g.timeHorizon === horizon).length;
+  if (!goals?.allGoals) return 0;
+  return goals.allGoals.filter((g) => g.timeHorizon === horizon).length;
 }
 
 /** Count goals with specific flexibility */
 function countGoalsByFlexibility(
-  goals: FinancialGoals | undefined,
+  goals: Partial<FinancialGoals> | undefined,
   flexibility: GoalFlexibility
 ): number {
-  if (!goals?.goals) return 0;
-  return goals.goals.filter((g) => g.flexibility === flexibility).length;
+  if (!goals?.allGoals) return 0;
+  return goals.allGoals.filter((g) => g.flexibility === flexibility).length;
 }
 
 /** Get tradeoff anchor value for an axis (-2 to +2 scale, 0 = neutral) */
 function getTradeoffAnchorValue(
-  purpose: FinancialPurpose | undefined,
+  purpose: Partial<FinancialPurpose> | undefined,
   axis: string
 ): number {
   if (!purpose?.tradeoffAnchors) return 0;
   const anchor = purpose.tradeoffAnchors.find((a) => a.axis === axis);
   if (!anchor) return 0;
 
-  // Convert choice + strength to -2 to +2 scale
-  if (anchor.choice === 'A') {
+  // Convert lean + strength to -2 to +2 scale
+  if (anchor.lean === 'A') {
     return anchor.strength === 1 ? -2 : -1;
-  } else if (anchor.choice === 'B') {
+  } else if (anchor.lean === 'B') {
     return anchor.strength === 5 ? 2 : 1;
   }
   return 0; // NEUTRAL
@@ -421,14 +435,14 @@ function calculateGuidanceLevel(
   }
 
   // Factor 5: Incomplete purpose statement (still clarifying)
-  if (!financialPurpose?.finalStatement) {
+  if (!financialPurpose?.finalText) {
     guidanceScore += 1;
     rationales.push('Still clarifying financial purpose');
   }
 
   // Factor 6: Many neutral tradeoff choices (uncertain preferences)
   const neutralAnchors =
-    financialPurpose?.tradeoffAnchors?.filter((a) => a.choice === 'NEUTRAL').length || 0;
+    financialPurpose?.tradeoffAnchors?.filter((a) => a.lean === 'NEUTRAL').length || 0;
   if (neutralAnchors >= 2) {
     guidanceScore += 1;
     rationales.push('Several uncertain tradeoff preferences');
@@ -577,9 +591,9 @@ export function hasEnoughDataForProfile(input: StrategyProfileInput): boolean {
   const { basicContext, valuesDiscovery, financialGoals } = input;
 
   // Need at least one of: values with top 5, or goals with priorities
-  const hasValues = valuesDiscovery?.top5 && valuesDiscovery.top5.length >= 3;
-  const hasGoals = financialGoals?.goals && financialGoals.goals.some((g) => g.priority);
-  const hasBasicContext = basicContext?.age !== undefined;
+  const hasValues = Boolean(valuesDiscovery?.top5 && valuesDiscovery.top5.length >= 3);
+  const hasGoals = Boolean(financialGoals?.allGoals && financialGoals.allGoals.some((g) => g.priority));
+  const hasBasicContext = calculateAge(basicContext?.birthDate) !== undefined;
 
   return (hasValues || hasGoals) && hasBasicContext;
 }

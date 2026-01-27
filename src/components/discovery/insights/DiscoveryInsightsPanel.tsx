@@ -8,6 +8,7 @@ import type {
   DiscoveryInsights,
   PlanningFocusRanking,
   ActionRecommendations,
+  StrategyProfile,
 } from '@/types/strategyProfile';
 import {
   INCOME_STRATEGY_LABELS,

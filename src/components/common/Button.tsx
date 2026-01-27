@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -17,6 +17,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-light',
   ghost:
     'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-300',
+  outline:
+    'bg-transparent text-primary border border-primary hover:bg-primary hover:text-white focus:ring-primary-light',
 }
 
 // Updated sizes to meet WCAG 44px minimum touch target

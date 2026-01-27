@@ -28,10 +28,10 @@ import { getCardById } from '@/data/valueCards';
 
 /** Input data for focus area prioritization */
 export interface FocusAreaInput {
-  basicContext?: BasicContext;
-  valuesDiscovery?: ValuesDiscovery;
-  financialGoals?: FinancialGoals;
-  financialPurpose?: FinancialPurpose;
+  basicContext?: Partial<BasicContext>;
+  valuesDiscovery?: Partial<ValuesDiscovery>;
+  financialGoals?: Partial<FinancialGoals>;
+  financialPurpose?: Partial<FinancialPurpose>;
 }
 
 /** Domain scoring result */
@@ -68,14 +68,13 @@ const VALUE_DOMAIN_MAP: Record<ValueCategory, PlanningDomain[]> = {
 /** Which goal categories increase importance of each domain */
 const GOAL_DOMAIN_MAP: Record<GoalCategory, PlanningDomain[]> = {
   RETIREMENT: ['RETIREMENT_INCOME', 'INVESTMENT_STRATEGY', 'TAX_OPTIMIZATION'],
-  FAMILY: ['ESTATE_LEGACY', 'INSURANCE_RISK', 'CASH_FLOW_DEBT'],
-  EDUCATION: ['CASH_FLOW_DEBT', 'INVESTMENT_STRATEGY', 'TAX_OPTIMIZATION'],
+  FAMILY_LEGACY: ['ESTATE_LEGACY', 'INSURANCE_RISK', 'CASH_FLOW_DEBT'],
   LIFESTYLE: ['CASH_FLOW_DEBT', 'INVESTMENT_STRATEGY'],
-  SECURITY: ['INSURANCE_RISK', 'CASH_FLOW_DEBT', 'RETIREMENT_INCOME'],
+  SECURITY_PROTECTION: ['INSURANCE_RISK', 'CASH_FLOW_DEBT', 'RETIREMENT_INCOME'],
   GIVING: ['ESTATE_LEGACY', 'TAX_OPTIMIZATION'],
-  CAREER: ['BUSINESS_CAREER', 'BENEFITS_OPTIMIZATION'],
-  HEALTHCARE: ['HEALTHCARE_LTC', 'INSURANCE_RISK'],
-  LEGACY: ['ESTATE_LEGACY', 'TAX_OPTIMIZATION', 'INSURANCE_RISK'],
+  CAREER_GROWTH: ['BUSINESS_CAREER', 'BENEFITS_OPTIMIZATION'],
+  HEALTH: ['HEALTHCARE_LTC', 'INSURANCE_RISK'],
+  MAJOR_PURCHASES: ['CASH_FLOW_DEBT', 'INVESTMENT_STRATEGY'],
 };
 
 // ============================================================
@@ -83,10 +82,11 @@ const GOAL_DOMAIN_MAP: Record<GoalCategory, PlanningDomain[]> = {
 // ============================================================
 
 /** Get top value categories from discovery */
-function getTopValueCategories(valuesDiscovery?: ValuesDiscovery): ValueCategory[] {
+function getTopValueCategories(valuesDiscovery?: Partial<ValuesDiscovery>): ValueCategory[] {
   if (!valuesDiscovery?.top5 || valuesDiscovery.top5.length === 0) return [];
 
-  const derived = computeDerivedInsights(valuesDiscovery);
+  // computeDerivedInsights needs a full ValuesDiscovery, so we need to cast safely
+  const derived = computeDerivedInsights(valuesDiscovery as ValuesDiscovery);
   const categories: ValueCategory[] = [];
 
   if (derived.dominantCategory) categories.push(derived.dominantCategory);
@@ -98,17 +98,33 @@ function getTopValueCategories(valuesDiscovery?: ValuesDiscovery): ValueCategory
 }
 
 /** Get top value card titles for display */
-function getTop5ValueTitles(valuesDiscovery?: ValuesDiscovery): string[] {
+function getTop5ValueTitles(valuesDiscovery?: Partial<ValuesDiscovery>): string[] {
   if (!valuesDiscovery?.top5) return [];
   return valuesDiscovery.top5
     .map((id) => getCardById(id)?.title || id)
     .slice(0, 5);
 }
 
+/** Calculate age from birth date */
+function calculateAge(birthDate: Date | undefined): number | undefined {
+  if (!birthDate) return undefined;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 /** Calculate years to retirement */
-function getYearsToRetirement(basicContext?: BasicContext): number | undefined {
-  if (!basicContext?.age || !basicContext?.targetRetirementAge) return undefined;
-  return basicContext.targetRetirementAge - basicContext.age;
+function getYearsToRetirement(basicContext?: Partial<BasicContext>): number | undefined {
+  const age = calculateAge(basicContext?.birthDate);
+  if (age === undefined) return undefined;
+  // Default target retirement age of 65
+  const targetAge = 65;
+  return Math.max(0, targetAge - age);
 }
 
 // ============================================================
@@ -146,7 +162,7 @@ function initializeDomainScores(): Map<PlanningDomain, DomainScore> {
 /** Score domains based on value categories */
 function scoreFromValues(
   scores: Map<PlanningDomain, DomainScore>,
-  valuesDiscovery?: ValuesDiscovery
+  valuesDiscovery?: Partial<ValuesDiscovery>
 ): void {
   if (!valuesDiscovery?.top5) return;
 
@@ -177,11 +193,11 @@ function scoreFromValues(
 /** Score domains based on financial goals */
 function scoreFromGoals(
   scores: Map<PlanningDomain, DomainScore>,
-  financialGoals?: FinancialGoals
+  financialGoals?: Partial<FinancialGoals>
 ): void {
-  if (!financialGoals?.goals) return;
+  if (!financialGoals?.allGoals) return;
 
-  const highPriorityGoals = financialGoals.goals.filter((g) => g.priority === 'HIGH');
+  const highPriorityGoals = financialGoals.allGoals.filter((g) => g.priority === 'HIGH');
 
   for (const goal of highPriorityGoals) {
     const relatedDomains = GOAL_DOMAIN_MAP[goal.category] || [];
@@ -189,10 +205,10 @@ function scoreFromGoals(
       const score = scores.get(domain);
       if (score) {
         score.score += 3; // Goals weighted more heavily
-        if (!score.goalConnections.includes(goal.title)) {
-          score.goalConnections.push(goal.title);
+        if (!score.goalConnections.includes(goal.label)) {
+          score.goalConnections.push(goal.label);
         }
-        score.rationales.push(`Supports goal: ${goal.title}`);
+        score.rationales.push(`Supports goal: ${goal.label}`);
       }
     }
 
@@ -203,7 +219,7 @@ function scoreFromGoals(
         const score = scores.get(domain);
         if (score) {
           score.score += 2;
-          score.rationales.push(`Near-term goal: ${goal.title}`);
+          score.rationales.push(`Near-term goal: ${goal.label}`);
         }
       }
     }
@@ -213,7 +229,7 @@ function scoreFromGoals(
 /** Score domains based on timing and life stage */
 function scoreFromContext(
   scores: Map<PlanningDomain, DomainScore>,
-  basicContext?: BasicContext
+  basicContext?: Partial<BasicContext>
 ): void {
   if (!basicContext) return;
 
@@ -369,9 +385,9 @@ export function generateFocusAreaRanking(input: FocusAreaInput): PlanningFocusRa
 export function hasEnoughDataForFocusAreas(input: FocusAreaInput): boolean {
   const { basicContext, valuesDiscovery, financialGoals } = input;
 
-  const hasValues = valuesDiscovery?.top5 && valuesDiscovery.top5.length >= 3;
-  const hasGoals = financialGoals?.goals && financialGoals.goals.length >= 1;
-  const hasContext = basicContext?.age !== undefined;
+  const hasValues = Boolean(valuesDiscovery?.top5 && valuesDiscovery.top5.length >= 3);
+  const hasGoals = Boolean(financialGoals?.allGoals && financialGoals.allGoals.length >= 1);
+  const hasContext = calculateAge(basicContext?.birthDate) !== undefined;
 
   return (hasValues || hasGoals) && hasContext;
 }
