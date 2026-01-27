@@ -96,22 +96,22 @@ export function ProfileSummary() {
       <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Financial Decision Profile
               </h1>
               {basicContext?.firstName && (
-                <p className="mt-1 text-lg text-gray-600">
+                <p className="mt-1 text-base sm:text-lg text-gray-600">
                   {basicContext.firstName} {basicContext.lastName}
                 </p>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/consumer/discovery/basic-context">
-                <Button variant="secondary">Edit Profile</Button>
+                <Button variant="secondary" fullWidth className="sm:w-auto">Edit Profile</Button>
               </Link>
-              <Button onClick={handleExportJSON}>Export JSON</Button>
+              <Button onClick={handleExportJSON} fullWidth className="sm:w-auto">Export JSON</Button>
             </div>
           </div>
 

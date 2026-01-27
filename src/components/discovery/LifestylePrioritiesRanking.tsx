@@ -63,7 +63,8 @@ function SortableItem({ id, priority, rank }: SortableItemProps): JSX.Element {
       {/* Drag handle */}
       <button
         type="button"
-        className="flex-shrink-0 p-1 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+        className="flex-shrink-0 p-2 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        aria-label="Drag to reorder"
         {...attributes}
         {...listeners}
       >

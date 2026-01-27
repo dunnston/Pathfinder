@@ -7,10 +7,11 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
   size?: 'sm' | 'md' | 'lg'
 }
 
+// Updated sizes to meet WCAG 44px minimum touch target
 const sizeStyles = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-4 py-3 text-lg',
+  sm: 'px-3 py-2.5 text-sm min-h-[44px]',
+  md: 'px-4 py-3 text-base min-h-[44px]',
+  lg: 'px-4 py-3.5 text-lg min-h-[48px]',
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -40,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm sm:text-base font-medium text-gray-700 mb-1.5"
           >
             {label}
           </label>
@@ -56,12 +57,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-error">
+          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-error">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1 text-sm text-gray-500">
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-gray-500">
             {helperText}
           </p>
         )}
@@ -107,7 +108,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm sm:text-base font-medium text-gray-700 mb-1.5"
           >
             {label}
           </label>
@@ -124,12 +125,12 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-error">
+          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-error">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1 text-sm text-gray-500">
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-gray-500">
             {helperText}
           </p>
         )}

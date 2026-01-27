@@ -165,7 +165,7 @@ export function RetirementVisionForm({
             label={getQuestionLabel('targetRetirementAge', isAdvisorMode)}
             type="number"
             value={formData.targetRetirementAge?.toString() || ''}
-            onChange={(e) => handleFieldChange('targetRetirementAge', parseInt(e.target.value) || undefined)}
+            onChange={(e) => handleFieldChange('targetRetirementAge', e.target.value ? parseInt(e.target.value) : null)}
             error={getFieldError('targetRetirementAge')}
             placeholder="e.g., 65"
             min={50}

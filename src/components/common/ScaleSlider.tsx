@@ -45,12 +45,12 @@ export function ScaleSlider({
         </div>
       )}
 
-      <div className="relative py-2">
+      <div className="relative py-4">
         {/* Track background */}
-        <div className="h-2 bg-gray-200 rounded-full">
+        <div className="h-3 bg-gray-200 rounded-full">
           {/* Filled track */}
           <div
-            className="absolute top-0 left-0 h-2 bg-primary rounded-full transition-all"
+            className="absolute top-0 left-0 h-3 bg-primary rounded-full transition-all"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -71,10 +71,10 @@ export function ScaleSlider({
           aria-valuetext={displayValue}
         />
 
-        {/* Custom thumb */}
+        {/* Custom thumb - larger for better touch target */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-primary rounded-full shadow-md border-2 border-white pointer-events-none transition-all"
-          style={{ left: `calc(${percent}% - 10px)` }}
+          className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-primary rounded-full shadow-md border-2 border-white pointer-events-none transition-all"
+          style={{ left: `calc(${percent}% - 14px)` }}
         />
       </div>
 
