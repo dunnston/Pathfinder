@@ -3,11 +3,11 @@
  * Displays the complete Financial Decision Profile for a client
  */
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useClientStore, useProfileStore } from '@/stores'
 import { AdvisorLayout, AdvisorPage } from '@/components/layout'
-import { Button, Card, CardContent } from '@/components/common'
+import { Button, Card, CardContent, Modal, ModalFooter } from '@/components/common'
 import {
   ProfileSectionCard,
   DataRow,
@@ -47,22 +47,60 @@ export function ClientProfile(): JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { getClient } = useClientStore()
-  const { currentProfile, initializeProfile } = useProfileStore()
+  const { currentProfile, loadClientProfile, saveClientProfile, _currentClientId } = useProfileStore()
+
+  // SEC-6: Export confirmation modal state
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [exportConfirmed, setExportConfirmed] = useState(false)
 
   const client = id ? getClient(id) : null
 
-  // Initialize profile for this client
+  // Load profile for this client (with client isolation)
   useEffect(() => {
-    if (client && (!currentProfile || currentProfile.userId !== client.id)) {
-      initializeProfile(client.id)
+    if (client && _currentClientId !== client.id) {
+      loadClientProfile(client.id)
     }
-  }, [client, currentProfile, initializeProfile])
+  }, [client, _currentClientId, loadClientProfile])
+
+  // Save profile when unmounting
+  useEffect(() => {
+    return () => {
+      saveClientProfile()
+    }
+  }, [saveClientProfile])
 
   // Generate system classifications
   const classifications = useMemo(() => {
     if (!currentProfile) return null
     return generateSystemClassifications(currentProfile)
   }, [currentProfile])
+
+  // SEC-6: Open export confirmation modal - defined before early returns
+  const handleExportClick = useCallback(() => {
+    setExportConfirmed(false)
+    setShowExportModal(true)
+  }, [])
+
+  // SEC-6: Export profile as JSON after confirmation - defined before early returns
+  const handleConfirmExport = useCallback(() => {
+    if (!currentProfile || !exportConfirmed || !client) return
+
+    const exportData = {
+      clientName: client.name,
+      ...currentProfile,
+      systemClassifications: classifications,
+      exportedAt: new Date().toISOString(),
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${client.name.replace(/\s+/g, '_')}_profile.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    setShowExportModal(false)
+  }, [currentProfile, exportConfirmed, client, classifications])
 
   if (!client) {
     return (
@@ -87,25 +125,6 @@ export function ClientProfile(): JSX.Element {
   const completionPercent = Math.round(client.profileCompletion * 100)
   const hasProfileData = currentProfile && currentProfile.userId === client.id
 
-  const handleExportJSON = (): void => {
-    if (!currentProfile) return
-
-    const exportData = {
-      clientName: client.name,
-      ...currentProfile,
-      systemClassifications: classifications,
-      exportedAt: new Date().toISOString(),
-    }
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${client.name.replace(/\s+/g, '_')}_profile.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   const { basicContext, retirementVision, planningPreferences, riskComfort, financialSnapshot } = currentProfile || {}
 
   return (
@@ -120,7 +139,7 @@ export function ClientProfile(): JSX.Element {
           <Link to={`/advisor/clients/${client.id}/discovery/basic-context`}>
             <Button variant="secondary">Edit Profile</Button>
           </Link>
-          <Button onClick={handleExportJSON}>Export JSON</Button>
+          <Button onClick={handleExportClick}>Export JSON</Button>
         </div>
       }
     >
@@ -437,7 +456,7 @@ export function ClientProfile(): JSX.Element {
             DISCOVERY_SECTIONS.map((section) => {
               const sectionProgress = client.sectionProgress[section.id] || 0
               const isComplete = sectionProgress === 1
-              const slug = section.id.replace(/([A-Z])/g, '-$1').toLowerCase()
+              const slug = section.id.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
 
               return (
                 <Card key={section.id}>
@@ -488,6 +507,59 @@ export function ClientProfile(): JSX.Element {
             </CardContent>
           </Card>
         </div>
+
+        {/* SEC-6: Export Confirmation Modal */}
+        <Modal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          title="Export Client Profile"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex">
+                <svg className="h-5 w-5 text-amber-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-amber-800">
+                    Sensitive Data Warning
+                  </h3>
+                  <p className="mt-1 text-sm text-amber-700">
+                    This export contains sensitive client information including:
+                  </p>
+                  <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
+                    <li>Personal identifying information</li>
+                    <li>Financial account details</li>
+                    <li>Income and asset information</li>
+                    <li>Retirement planning data</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={exportConfirmed}
+                onChange={(e) => setExportConfirmed(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600">
+                I understand this file contains sensitive client data and I will handle it according to data protection requirements.
+              </span>
+            </label>
+          </div>
+
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setShowExportModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmExport} disabled={!exportConfirmed}>
+              Download Export
+            </Button>
+          </ModalFooter>
+        </Modal>
       </AdvisorPage>
     </AdvisorLayout>
   )

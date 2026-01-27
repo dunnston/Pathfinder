@@ -3,7 +3,7 @@
  * Renders the appropriate discovery section based on URL param
  */
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
@@ -32,7 +32,7 @@ const SECTION_TO_SLUG: Record<ProfileSection, string> = {
 export function DiscoverySection(): JSX.Element {
   const { section: sectionSlug } = useParams<{ section: string }>()
   const navigate = useNavigate()
-  const { currentProfile, updateSection, initializeProfile } = useProfileStore()
+  const { currentProfile, updateSection, initializeProfile, hasUnsavedChanges } = useProfileStore()
 
   // Initialize profile if needed (consumer mode uses a default user ID)
   useEffect(() => {
@@ -40,6 +40,31 @@ export function DiscoverySection(): JSX.Element {
       initializeProfile('consumer')
     }
   }, [currentProfile, initializeProfile])
+
+  // Warn about unsaved changes when leaving the page
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent): string | undefined => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        // Modern browsers ignore custom messages, but we set returnValue for compatibility
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
+        return e.returnValue
+      }
+      return undefined
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Define handleSaveAndExit before early returns (hooks must be called unconditionally)
+  // UX-15: Mark that we're navigating so forms can flush pending saves
+  const handleSaveAndExit = useCallback((): void => {
+    // Set hasUnsavedChanges to false since we're intentionally leaving
+    // The form components will flush their pending saves on unmount
+    // The Zustand persist middleware will auto-save the state
+    navigate('/consumer')
+  }, [navigate])
 
   // Validate section slug
   if (!sectionSlug || !SLUG_TO_SECTION[sectionSlug]) {
@@ -70,10 +95,6 @@ export function DiscoverySection(): JSX.Element {
       const prevSection = DISCOVERY_SECTIONS[currentIndex - 1]
       navigate(`/consumer/discovery/${SECTION_TO_SLUG[prevSection.id]}`)
     }
-  }
-
-  const handleSaveAndExit = (): void => {
-    navigate('/consumer')
   }
 
   // Handle section-specific form saves

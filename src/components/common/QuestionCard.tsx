@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 
 interface QuestionCardProps {
   question: string
@@ -8,7 +8,8 @@ interface QuestionCardProps {
   className?: string
 }
 
-export function QuestionCard({
+// SEC-10: Memoize to prevent unnecessary re-renders
+export const QuestionCard = memo(function QuestionCard({
   question,
   helperText,
   whyItMatters,
@@ -59,4 +60,4 @@ export function QuestionCard({
       )}
     </div>
   )
-}
+})

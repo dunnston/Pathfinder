@@ -36,3 +36,6 @@ export { RankingList } from './RankingList'
 
 // Error and loading components
 export { ErrorBoundary, LoadingSpinner, LoadingPage, LoadingOverlay } from './ErrorBoundary'
+
+// Session timeout wrapper (SEC-8)
+export { SessionTimeoutWrapper } from './SessionTimeoutWrapper'

@@ -5,6 +5,7 @@
 
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { Button } from './Button';
+import { logger } from '@/services/logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -27,7 +28,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // SEC-7: Use logger instead of console.error for production safety
+    logger.error('ErrorBoundary caught an error', error, {
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   handleRetry = (): void => {
@@ -68,7 +72,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <p className="text-gray-600 mb-6">
               We encountered an unexpected error. Your data has been saved and you can try again.
             </p>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <pre className="text-left text-xs bg-gray-100 p-3 rounded mb-4 overflow-auto max-h-32">
                 {this.state.error.message}
               </pre>

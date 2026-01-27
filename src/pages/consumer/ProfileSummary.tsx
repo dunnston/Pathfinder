@@ -3,10 +3,17 @@
  * Displays the completed Financial Decision Profile with classifications
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfileStore } from '@/stores';
-import { Button, Card } from '@/components/common';
+import { Button, Card, LoadingSpinner, Modal, ModalFooter } from '@/components/common';
+
+// Toast notification for export status
+interface ToastState {
+  show: boolean;
+  type: 'success' | 'error';
+  message: string;
+}
 import {
   ProfileSectionCard,
   DataRow,
@@ -43,7 +50,16 @@ import {
 } from '@/services/displayHelpers';
 
 export function ProfileSummary() {
-  const { currentProfile } = useProfileStore();
+  const { currentProfile, _hasHydrated } = useProfileStore();
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportConfirmed, setExportConfirmed] = useState(false);
+  const [toast, setToast] = useState<ToastState>({ show: false, type: 'success', message: '' });
+
+  // Auto-hide toast after 5 seconds
+  const showToast = useCallback((type: 'success' | 'error', message: string) => {
+    setToast({ show: true, type, message });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 5000);
+  }, []);
 
   // Generate system classifications
   const classifications = useMemo(() => {
@@ -51,24 +67,62 @@ export function ProfileSummary() {
     return generateSystemClassifications(currentProfile);
   }, [currentProfile]);
 
-  // Export profile as JSON
-  const handleExportJSON = () => {
-    if (!currentProfile) return;
+  // Check if profile has minimum required data
+  const hasMinimalData = useMemo(() => {
+    if (!currentProfile) return false;
+    return !!(
+      currentProfile.basicContext?.firstName ||
+      currentProfile.retirementVision?.targetRetirementAge
+    );
+  }, [currentProfile]);
 
-    const exportData = {
-      ...currentProfile,
-      systemClassifications: classifications,
-      exportedAt: new Date().toISOString(),
-    };
+  // Open export confirmation modal - defined before early returns
+  const handleExportClick = useCallback(() => {
+    setExportConfirmed(false);
+    setShowExportModal(true);
+  }, []);
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `financial_profile_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // Export profile as JSON after confirmation - defined before early returns
+  const handleConfirmExport = useCallback(() => {
+    if (!currentProfile || !exportConfirmed) return;
+
+    try {
+      const exportData = {
+        ...currentProfile,
+        systemClassifications: classifications,
+        exportedAt: new Date().toISOString(),
+      };
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `financial_profile_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setShowExportModal(false);
+      showToast('success', 'Profile exported successfully');
+    } catch (error) {
+      setShowExportModal(false);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showToast('error', `Export failed: ${errorMessage}`);
+    }
+  }, [currentProfile, exportConfirmed, classifications, showToast]);
+
+  // Show loading state while hydrating from localStorage
+  if (!_hasHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentProfile) {
     return (
@@ -89,16 +143,37 @@ export function ProfileSummary() {
     );
   }
 
+  // Show incomplete profile state
+  if (!hasMinimalData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Profile Incomplete</h1>
+          <p className="mt-4 text-gray-600">
+            Please complete at least the Basic Context section to view your profile summary.
+          </p>
+          <Link
+            to="/consumer/discovery/basic-context"
+            className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+          >
+            Continue Discovery
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const { basicContext, retirementVision, planningPreferences, riskComfort, financialSnapshot } = currentProfile;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      {/* SEC-26: Main landmark for accessibility */}
+      <main className="mx-auto max-w-4xl px-4 py-8" role="main" aria-labelledby="profile-title">
         {/* Header */}
-        <div className="mb-8">
+        <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 id="profile-title" className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Financial Decision Profile
               </h1>
               {basicContext?.firstName && (
@@ -111,7 +186,7 @@ export function ProfileSummary() {
               <Link to="/consumer/discovery/basic-context">
                 <Button variant="secondary" fullWidth className="sm:w-auto">Edit Profile</Button>
               </Link>
-              <Button onClick={handleExportJSON} fullWidth className="sm:w-auto">Export JSON</Button>
+              <Button onClick={handleExportClick} fullWidth className="sm:w-auto">Export JSON</Button>
             </div>
           </div>
 
@@ -134,7 +209,7 @@ export function ProfileSummary() {
               </div>
             </div>
           )}
-        </div>
+        </header>
 
         {/* Planning Stage Badge */}
         {classifications && (
@@ -513,7 +588,91 @@ export function ProfileSummary() {
             </Card>
           )}
         </div>
-      </div>
+      </main>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div
+          className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-opacity ${
+            toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+          }`}
+          role="alert"
+          aria-live="polite"
+        >
+          {toast.type === 'success' ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+          <span>{toast.message}</span>
+          <button
+            onClick={() => setToast(prev => ({ ...prev, show: false }))}
+            className="ml-2 text-white/80 hover:text-white"
+            aria-label="Dismiss notification"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Export Confirmation Modal */}
+      <Modal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Export Financial Profile"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex">
+              <svg className="h-5 w-5 text-amber-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">
+                  Sensitive Data Warning
+                </h3>
+                <p className="mt-1 text-sm text-amber-700">
+                  This export contains sensitive personal and financial information including:
+                </p>
+                <ul className="mt-2 text-sm text-amber-700 list-disc list-inside">
+                  <li>Personal identifying information</li>
+                  <li>Financial account details</li>
+                  <li>Income and asset information</li>
+                  <li>Retirement planning data</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={exportConfirmed}
+              onChange={(e) => setExportConfirmed(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-600">
+              I understand this file contains sensitive financial data and I will store it securely.
+            </span>
+          </label>
+        </div>
+
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setShowExportModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmExport} disabled={!exportConfirmed}>
+            Download Export
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }

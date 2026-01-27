@@ -94,14 +94,16 @@ export function WizardLayout({
             )}
           </div>
 
-          {/* Right side - Next button */}
-          <Button
-            onClick={onNext}
-            disabled={isNextDisabled}
-            isLoading={isLoading}
-          >
-            {isLastStep ? 'Complete' : nextLabel}
-          </Button>
+          {/* Right side - Next button (only show when onNext is provided) */}
+          {onNext && (
+            <Button
+              onClick={onNext}
+              disabled={isNextDisabled}
+              isLoading={isLoading}
+            >
+              {isLastStep ? 'Complete' : nextLabel}
+            </Button>
+          )}
         </div>
       </div>
 
