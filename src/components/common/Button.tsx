@@ -19,10 +19,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-300',
 }
 
+// Updated sizes to meet WCAG 44px minimum touch target
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-6 py-3 text-lg',
+  sm: 'px-4 py-2.5 text-sm min-h-[44px]',
+  md: 'px-5 py-3 text-base min-h-[44px]',
+  lg: 'px-6 py-3.5 text-lg min-h-[48px]',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

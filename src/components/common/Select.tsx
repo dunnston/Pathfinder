@@ -15,10 +15,11 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'siz
   placeholder?: string
 }
 
+// Updated sizes to meet WCAG 44px minimum touch target
 const sizeStyles = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-4 py-3 text-lg',
+  sm: 'px-3 py-2.5 text-sm min-h-[44px]',
+  md: 'px-4 py-3 text-base min-h-[44px]',
+  lg: 'px-4 py-3.5 text-lg min-h-[48px]',
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -50,7 +51,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm sm:text-base font-medium text-gray-700 mb-1.5"
           >
             {label}
           </label>
