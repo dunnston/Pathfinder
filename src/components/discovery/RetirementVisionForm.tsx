@@ -165,7 +165,7 @@ export function RetirementVisionForm({
             label={getQuestionLabel('targetRetirementAge', isAdvisorMode)}
             type="number"
             value={formData.targetRetirementAge?.toString() || ''}
-            onChange={(e) => handleFieldChange('targetRetirementAge', parseInt(e.target.value) || null)}
+            onChange={(e) => handleFieldChange('targetRetirementAge', parseInt(e.target.value) || undefined)}
             error={getFieldError('targetRetirementAge')}
             placeholder="e.g., 65"
             min={50}
@@ -178,7 +178,7 @@ export function RetirementVisionForm({
             label={getQuestionLabel('targetRetirementYear', isAdvisorMode)}
             type="number"
             value={formData.targetRetirementYear?.toString() || ''}
-            onChange={(e) => handleFieldChange('targetRetirementYear', parseInt(e.target.value) || null)}
+            onChange={(e) => handleFieldChange('targetRetirementYear', parseInt(e.target.value) || undefined)}
             error={getFieldError('targetRetirementYear')}
             placeholder={`e.g., ${new Date().getFullYear() + 10}`}
             min={new Date().getFullYear()}
