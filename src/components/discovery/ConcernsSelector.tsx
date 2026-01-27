@@ -16,10 +16,9 @@ interface ConcernsSelectorProps {
 }
 
 const SEVERITY_OPTIONS: Array<{ value: ConcernSeverity; label: string }> = [
-  { value: 'minor', label: 'Minor concern' },
-  { value: 'moderate', label: 'Moderate concern' },
-  { value: 'significant', label: 'Significant concern' },
-  { value: 'major', label: 'Major concern' },
+  { value: 'low', label: 'Low concern' },
+  { value: 'medium', label: 'Medium concern' },
+  { value: 'high', label: 'High concern' },
 ]
 
 export function ConcernsSelector({
@@ -29,22 +28,22 @@ export function ConcernsSelector({
   error,
   isAdvisorMode = false,
 }: ConcernsSelectorProps): JSX.Element {
-  const selectedTypes = new Set(value.map((c) => c.type))
+  const selectedTypes = new Set(value.map((c) => c.concern))
 
   const handleToggleConcern = (concernType: ConcernType): void => {
     if (selectedTypes.has(concernType)) {
       // Remove the concern
-      onChange(value.filter((c) => c.type !== concernType))
+      onChange(value.filter((c) => c.concern !== concernType))
     } else if (value.length < maxSelections) {
       // Add the concern with default severity
-      onChange([...value, { type: concernType, severity: 'moderate' }])
+      onChange([...value, { concern: concernType, severity: 'medium' }])
     }
   }
 
   const handleSeverityChange = (concernType: ConcernType, severity: ConcernSeverity): void => {
     onChange(
       value.map((c) =>
-        c.type === concernType ? { ...c, severity } : c
+        c.concern === concernType ? { ...c, severity } : c
       )
     )
   }
@@ -52,7 +51,7 @@ export function ConcernsSelector({
   const handleNotesChange = (concernType: ConcernType, notes: string): void => {
     onChange(
       value.map((c) =>
-        c.type === concernType ? { ...c, notes: notes || undefined } : c
+        c.concern === concernType ? { ...c, notes: notes || undefined } : c
       )
     )
   }
@@ -130,12 +129,12 @@ export function ConcernsSelector({
 
           <div className="space-y-3">
             {value.map((concern) => {
-              const option = CONCERN_OPTIONS.find((o) => o.value === concern.type)
+              const option = CONCERN_OPTIONS.find((o) => o.value === concern.concern)
               if (!option) return null
 
               return (
                 <div
-                  key={concern.type}
+                  key={concern.concern}
                   className="p-4 rounded-lg border border-gray-200 bg-white"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -147,7 +146,7 @@ export function ConcernsSelector({
                           value={concern.severity}
                           onChange={(e) =>
                             handleSeverityChange(
-                              concern.type,
+                              concern.concern,
                               e.target.value as ConcernSeverity
                             )
                           }
@@ -156,7 +155,7 @@ export function ConcernsSelector({
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleToggleConcern(concern.type)}
+                      onClick={() => handleToggleConcern(concern.concern)}
                       className="p-1 text-gray-400 hover:text-gray-600"
                       aria-label={`Remove ${option.label}`}
                     >
@@ -172,12 +171,12 @@ export function ConcernsSelector({
                   </div>
 
                   {/* Optional notes for "other" concern type */}
-                  {concern.type === 'other' && (
+                  {concern.concern === 'other' && (
                     <div className="mt-3">
                       <input
                         type="text"
                         value={concern.notes || ''}
-                        onChange={(e) => handleNotesChange(concern.type, e.target.value)}
+                        onChange={(e) => handleNotesChange(concern.concern, e.target.value)}
                         placeholder="Please describe your concern..."
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm
                                    focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"

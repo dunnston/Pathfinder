@@ -181,7 +181,7 @@ export function BasicContextForm({
       {/* Personal Information */}
       <QuestionCard
         question={isAdvisorMode ? "Client's Personal Information" : "Your Personal Information"}
-        helpText="This information helps us personalize your retirement planning experience."
+        helperText="This information helps us personalize your retirement planning experience."
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
@@ -222,7 +222,7 @@ export function BasicContextForm({
       {showSpouse && (
         <QuestionCard
           question={`Tell us about ${isAdvisorMode ? "the client's" : 'your'} spouse or partner`}
-          helpText="Understanding your spouse's situation helps us plan for combined retirement income."
+          helperText="Understanding your spouse's situation helps us plan for combined retirement income."
         >
           <SpouseFields
             data={formData.spouse}
@@ -236,7 +236,7 @@ export function BasicContextForm({
       {/* Employment Information */}
       <QuestionCard
         question={`${isAdvisorMode ? "Client's" : 'Your'} Employment`}
-        helpText="This helps us understand your current financial situation and retirement benefits."
+        helperText="This helps us understand your current financial situation and retirement benefits."
       >
         <div className="space-y-6">
           <Input
@@ -283,7 +283,7 @@ export function BasicContextForm({
       {/* Dependents */}
       <QuestionCard
         question="Dependents"
-        helpText={`People who rely on ${youOrClient} financially may affect retirement planning.`}
+        helperText={`People who rely on ${youOrClient} financially may affect retirement planning.`}
       >
         <DependentsList
           dependents={formData.dependents}
@@ -296,7 +296,7 @@ export function BasicContextForm({
       {/* Optional: Lifestyle Information */}
       <QuestionCard
         question="Lifestyle & Interests (Optional)"
-        helpText="This helps us understand what retirement lifestyle you envision."
+        helperText="This helps us understand what retirement lifestyle you envision."
       >
         <div className="space-y-4">
           <Input

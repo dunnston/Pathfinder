@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
-import { useProfileStore, useUserStore } from '@/stores'
+import { useProfileStore } from '@/stores'
 import { WizardLayout } from '@/components/layout'
 import { BasicContextForm, RetirementVisionForm, PlanningPreferencesForm, RiskComfortForm, FinancialSnapshotForm } from '@/components/discovery'
 import { DISCOVERY_SECTIONS } from '@/types'
@@ -33,14 +33,13 @@ export function DiscoverySection(): JSX.Element {
   const { section: sectionSlug } = useParams<{ section: string }>()
   const navigate = useNavigate()
   const { currentProfile, updateSection, initializeProfile } = useProfileStore()
-  const { currentUser } = useUserStore()
 
-  // Initialize profile if needed
+  // Initialize profile if needed (consumer mode uses a default user ID)
   useEffect(() => {
-    if (!currentProfile && currentUser) {
-      initializeProfile(currentUser.id)
+    if (!currentProfile) {
+      initializeProfile('consumer')
     }
-  }, [currentProfile, currentUser, initializeProfile])
+  }, [currentProfile, initializeProfile])
 
   // Validate section slug
   if (!sectionSlug || !SLUG_TO_SECTION[sectionSlug]) {

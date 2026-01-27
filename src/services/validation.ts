@@ -139,13 +139,13 @@ export const basicContextFieldSchemas = {
 /**
  * Validate a single field and return error message if invalid
  */
-export function validateField<T>(
-  schema: z.ZodType<T>,
+export function validateField(
+  schema: z.ZodTypeAny,
   value: unknown
 ): string | null {
   const result = schema.safeParse(value)
   if (result.success) return null
-  return result.error.errors[0]?.message || 'Invalid value'
+  return result.error.issues[0]?.message || 'Invalid value'
 }
 
 /**
@@ -163,7 +163,7 @@ export function validateBasicContext(data: unknown): {
   }
 
   const errors: Record<string, string> = {}
-  for (const error of result.error.errors) {
+  for (const error of result.error.issues) {
     const path = error.path.join('.')
     errors[path] = error.message
   }
@@ -198,15 +198,14 @@ export const concernTypeSchema = z.enum([
 
 /** Concern severity enum */
 export const concernSeveritySchema = z.enum([
-  'minor',
-  'moderate',
-  'significant',
-  'major',
+  'low',
+  'medium',
+  'high',
 ])
 
 /** Retirement concern schema */
 export const retirementConcernSchema = z.object({
-  type: concernTypeSchema,
+  concern: concernTypeSchema,
   severity: concernSeveritySchema,
   notes: z.string().optional(),
 })
@@ -264,7 +263,7 @@ export function validateRetirementVision(data: unknown): {
   }
 
   const errors: Record<string, string> = {}
-  for (const error of result.error.errors) {
+  for (const error of result.error.issues) {
     const path = error.path.join('.')
     errors[path] = error.message
   }
@@ -393,7 +392,7 @@ export function validatePlanningPreferences(data: unknown): {
   }
 
   const errors: Record<string, string> = {}
-  for (const error of result.error.errors) {
+  for (const error of result.error.issues) {
     const path = error.path.join('.')
     errors[path] = error.message
   }
@@ -488,7 +487,7 @@ export function validateRiskComfort(data: unknown): {
   }
 
   const errors: Record<string, string> = {}
-  for (const error of result.error.errors) {
+  for (const error of result.error.issues) {
     const path = error.path.join('.')
     errors[path] = error.message
   }
@@ -677,7 +676,7 @@ export function validateFinancialSnapshot(data: unknown): {
   }
 
   const errors: Record<string, string> = {}
-  for (const error of result.error.errors) {
+  for (const error of result.error.issues) {
     const path = error.path.join('.')
     errors[path] = error.message
   }
