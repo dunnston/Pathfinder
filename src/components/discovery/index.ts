@@ -14,7 +14,38 @@ export { RetirementVisionForm } from './RetirementVisionForm'
 export { ConcernsSelector } from './ConcernsSelector'
 export { LifestylePrioritiesRanking } from './LifestylePrioritiesRanking'
 
-// Planning Preferences (Section 3)
+// Values Discovery (Section 3)
+export { ValuesDiscoveryForm } from './ValuesDiscoveryForm'
+export { ValuesSortStep } from './values/ValuesSortStep'
+export { UnsureResolutionStep } from './values/UnsureResolutionStep'
+export { TopNSelectionStep } from './values/TopNSelectionStep'
+export { TradeoffValidationStep } from './values/TradeoffValidationStep'
+export { NonNegotiablesStep } from './values/NonNegotiablesStep'
+export { ValuesSummary } from './values/ValuesSummary'
+export { CustomValueModal } from './values/CustomValueModal'
+
+// Financial Goals (Section 4)
+export { FinancialGoalsForm } from './FinancialGoalsForm'
+export { FreeRecallStep } from './goals/FreeRecallStep'
+export { SystemGoalCards } from './goals/SystemGoalCards'
+export { PrioritySortStep } from './goals/PrioritySortStep'
+export { TimeHorizonStep } from './goals/TimeHorizonStep'
+export { FlexibilityTestStep } from './goals/FlexibilityTestStep'
+export { GoalTradeoffs } from './goals/GoalTradeoffs'
+export { FinalGoalsList } from './goals/FinalGoalsList'
+
+// Financial Purpose (Section 5)
+export { FinancialPurposeForm } from './FinancialPurposeForm'
+export { PurposeIntro } from './purpose/PurposeIntro'
+export { ConfirmInputsStep } from './purpose/ConfirmInputsStep'
+export { PurposeDriversStep } from './purpose/PurposeDriversStep'
+export { TradeoffAnchorStep } from './purpose/TradeoffAnchorStep'
+export { VisionAnchorStep } from './purpose/VisionAnchorStep'
+export { DraftAssemblyStep } from './purpose/DraftAssemblyStep'
+export { RefinementStep } from './purpose/RefinementStep'
+export { PurposeSummary } from './purpose/PurposeSummary'
+
+// Planning Preferences (Section 6)
 export { PlanningPreferencesForm } from './PlanningPreferencesForm'
 export { TradeoffExercise } from './TradeoffExercise'
 export { ValueRanking } from './ValueRanking'
@@ -29,3 +60,6 @@ export { FinancialSnapshotForm } from './FinancialSnapshotForm'
 export { AccountsList } from './AccountsList'
 export { CurrentIncomeList, RetirementIncomeList } from './IncomeSourcesList'
 export { DebtList, AssetList } from './DebtAssetsList'
+
+// Discovery Insights
+export { DiscoveryInsightsPanel } from './insights/DiscoveryInsightsPanel'

@@ -6,7 +6,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Select, Button } from '@/components/common'
 import { TradeoffExercise } from './TradeoffExercise'
-import { ValueRanking } from './ValueRanking'
 import {
   COMPLEXITY_TOLERANCE_OPTIONS,
   COMFORT_LEVEL_OPTIONS,
@@ -262,25 +261,6 @@ export function PlanningPreferencesForm({
           {getFieldError('educationPreference') && (
             <p className="text-sm text-red-600">{getFieldError('educationPreference')}</p>
           )}
-        </div>
-      </div>
-
-      {/* Values Ranking Section */}
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-          Core Values
-        </h3>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
-            {getQuestionLabel('valuesPriorities', isAdvisorMode)}
-          </label>
-          <ValueRanking
-            value={formData.valuesPriorities || []}
-            onChange={(values) => handleFieldChange('valuesPriorities', values)}
-            error={getFieldError('valuesPriorities')}
-            isAdvisorMode={isAdvisorMode}
-          />
         </div>
       </div>
 

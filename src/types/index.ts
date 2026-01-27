@@ -80,6 +80,44 @@ export type {
   SystemClassifications,
 } from './systemClassifications';
 
+// Values Discovery types
+export type {
+  ValueCategory,
+  Pile,
+  ValuesDiscoveryState,
+  TradeoffChoice,
+  TradeoffStrength,
+  ValueCard,
+  TradeoffResponse,
+  UnsureResolution,
+  CategoryCount,
+  ValuesDiscoveryDerived,
+  ValuesDiscovery,
+} from './valuesDiscovery';
+
+// Financial Goals types
+export type {
+  GoalCategory,
+  GoalPriority,
+  GoalTimeHorizon,
+  GoalFlexibility,
+  FinancialGoalsState,
+  GoalSource,
+  FinancialGoal,
+  FinancialGoalTradeoff,
+  FinancialGoals,
+} from './financialGoals';
+
+// Financial Purpose types
+export type {
+  PurposeDriver,
+  TradeoffAxis,
+  FinancialPurposeState,
+  TradeoffAnchor,
+  SoFPDraft,
+  FinancialPurpose,
+} from './financialPurpose';
+
 // Profile types
 export type {
   ProfileStatus,
@@ -116,3 +154,36 @@ export type {
 } from './discovery';
 
 export { DISCOVERY_SECTIONS } from './discovery';
+
+// Strategy Profile types (Discovery to Data)
+export type {
+  IncomeStrategyOrientation,
+  TimingSensitivity,
+  PlanningFlexibility,
+  ComplexityTolerance,
+  GuidanceLevel,
+  StrategyDimension,
+  StrategyProfile,
+  PlanningDomain,
+  PlanningDomainInfo,
+  PlanningFocusArea,
+  PlanningFocusRanking,
+  ActionType,
+  ActionGuidance,
+  ActionUrgency,
+  ActionRecommendation,
+  ActionRecommendations,
+  DiscoveryInsights,
+} from './strategyProfile';
+
+export {
+  INCOME_STRATEGY_LABELS,
+  TIMING_SENSITIVITY_LABELS,
+  PLANNING_FLEXIBILITY_LABELS,
+  COMPLEXITY_TOLERANCE_LABELS,
+  GUIDANCE_LEVEL_LABELS,
+  PLANNING_DOMAIN_LABELS,
+  ACTION_TYPE_LABELS,
+  ACTION_GUIDANCE_LABELS,
+  ACTION_URGENCY_LABELS,
+} from './strategyProfile';

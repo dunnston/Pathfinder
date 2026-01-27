@@ -23,6 +23,8 @@ interface RetirementVisionFormProps {
   onAutoSave?: (data: Partial<RetirementVision>) => void
   isAdvisorMode?: boolean
   clientName?: string
+  /** Birth date from Basic Context - used to calculate target retirement year */
+  birthDate?: Date | string
 }
 
 export function RetirementVisionForm({
@@ -30,7 +32,12 @@ export function RetirementVisionForm({
   onSave,
   onAutoSave,
   isAdvisorMode = false,
+  birthDate,
 }: RetirementVisionFormProps): JSX.Element {
+  // Calculate birth year from birthDate prop
+  const birthYear = birthDate
+    ? new Date(birthDate).getFullYear()
+    : null
   // Form state
   const [formData, setFormData] = useState<Partial<RetirementVision>>(() => ({
     targetRetirementAge: undefined,
@@ -41,7 +48,6 @@ export function RetirementVisionForm({
     mustHaveOutcomes: [],
     niceToHaveOutcomes: [],
     lifestylePriorities: [],
-    financialPurposeStatement: '',
     ...initialData,
   }))
 
@@ -57,6 +63,16 @@ export function RetirementVisionForm({
       setFormData((prev) => ({ ...prev, ...initialData }))
     }
   }, [initialData])
+
+  // Calculate targetRetirementYear when birthYear or targetRetirementAge changes
+  useEffect(() => {
+    if (birthYear && formData.targetRetirementAge) {
+      const calculatedYear = birthYear + formData.targetRetirementAge
+      if (formData.targetRetirementYear !== calculatedYear) {
+        setFormData((prev) => ({ ...prev, targetRetirementYear: calculatedYear }))
+      }
+    }
+  }, [birthYear, formData.targetRetirementAge, formData.targetRetirementYear])
 
   // Auto-save effect
   useEffect(() => {
@@ -78,7 +94,16 @@ export function RetirementVisionForm({
   // Field change handler with validation
   const handleFieldChange = useCallback(
     <K extends keyof RetirementVision>(field: K, value: RetirementVision[K]) => {
-      setFormData((prev) => ({ ...prev, [field]: value }))
+      setFormData((prev) => {
+        const updated = { ...prev, [field]: value }
+
+        // Auto-calculate targetRetirementYear when targetRetirementAge changes
+        if (field === 'targetRetirementAge' && birthYear && typeof value === 'number') {
+          updated.targetRetirementYear = birthYear + value
+        }
+
+        return updated
+      })
       setTouched((prev) => new Set(prev).add(field))
 
       // Validate field if it has a schema
@@ -96,7 +121,7 @@ export function RetirementVisionForm({
         })
       }
     },
-    []
+    [birthYear]
   )
 
   // Handle must-have outcome changes
@@ -173,17 +198,28 @@ export function RetirementVisionForm({
             helperText="Between 50 and 85"
           />
 
-          {/* Target Retirement Year */}
-          <Input
-            label={getQuestionLabel('targetRetirementYear', isAdvisorMode)}
-            type="number"
-            value={formData.targetRetirementYear?.toString() || ''}
-            onChange={(e) => handleFieldChange('targetRetirementYear', parseInt(e.target.value) || undefined)}
-            error={getFieldError('targetRetirementYear')}
-            placeholder={`e.g., ${new Date().getFullYear() + 10}`}
-            min={new Date().getFullYear()}
-            max={new Date().getFullYear() + 40}
-          />
+          {/* Target Retirement Year - Calculated */}
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Target Retirement Year
+            </label>
+            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700">
+              {formData.targetRetirementYear ? (
+                <span className="font-medium">{formData.targetRetirementYear}</span>
+              ) : birthYear && formData.targetRetirementAge ? (
+                <span className="font-medium">{birthYear + formData.targetRetirementAge}</span>
+              ) : (
+                <span className="text-gray-400 italic">
+                  {birthYear ? 'Enter target age above' : 'Calculated from birth date & target age'}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">
+              {birthYear
+                ? 'Automatically calculated from your birth date'
+                : 'Complete Basic Context section to enable calculation'}
+            </p>
+          </div>
         </div>
 
         {/* Retirement Flexibility */}
@@ -415,27 +451,6 @@ export function RetirementVisionForm({
           onChange={(priorities) => handleFieldChange('lifestylePriorities', priorities)}
           error={getFieldError('lifestylePriorities')}
           isAdvisorMode={isAdvisorMode}
-        />
-      </div>
-
-      {/* Financial Purpose Statement */}
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-          Financial Purpose
-        </h3>
-
-        <TextArea
-          label={getQuestionLabel('financialPurposeStatement', isAdvisorMode)}
-          value={formData.financialPurposeStatement || ''}
-          onChange={(e) => handleFieldChange('financialPurposeStatement', e.target.value)}
-          error={getFieldError('financialPurposeStatement')}
-          placeholder={
-            isAdvisorMode
-              ? "e.g., The client's money is for providing security and enabling experiences with family."
-              : 'e.g., My money is for providing security for my family and enabling us to travel and create memories together.'
-          }
-          rows={3}
-          helperText="This statement can help guide future financial decisions."
         />
       </div>
 

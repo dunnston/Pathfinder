@@ -11,6 +11,8 @@ export interface DiscoverySection {
   description: string;
   estimatedMinutes: number;
   order: number;
+  /** Sections that must be completed before this one is accessible */
+  requiresSections?: ProfileSection[];
 }
 
 /** All discovery sections in order */
@@ -30,25 +32,47 @@ export const DISCOVERY_SECTIONS: DiscoverySection[] = [
     order: 2,
   },
   {
+    id: 'valuesDiscovery',
+    title: 'Values Discovery',
+    description: 'Identify what matters most in your financial decisions',
+    estimatedMinutes: 8,
+    order: 3,
+  },
+  {
+    id: 'financialGoals',
+    title: 'Financial Goals',
+    description: 'Define and prioritize your key financial objectives',
+    estimatedMinutes: 10,
+    order: 4,
+  },
+  {
+    id: 'financialPurpose',
+    title: 'Financial Purpose',
+    description: 'Create your statement of financial purpose',
+    estimatedMinutes: 5,
+    order: 5,
+    requiresSections: ['valuesDiscovery', 'financialGoals'],
+  },
+  {
     id: 'planningPreferences',
     title: 'Planning Preferences',
     description: 'How do you like to make decisions?',
     estimatedMinutes: 6,
-    order: 3,
+    order: 6,
   },
   {
     id: 'riskComfort',
     title: 'Risk & Comfort',
     description: 'Understanding your comfort with risk',
     estimatedMinutes: 5,
-    order: 4,
+    order: 7,
   },
   {
     id: 'financialSnapshot',
     title: 'Financial Snapshot',
     description: 'A high-level view of your finances',
     estimatedMinutes: 10,
-    order: 5,
+    order: 8,
   },
 ];
 

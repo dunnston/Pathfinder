@@ -292,7 +292,6 @@ export function ClientProfile(): JSX.Element {
                         }))}
                       />
                     )}
-                    <DataRow label="Purpose Statement" value={retirementVision.financialPurposeStatement} />
                   </dl>
                 ) : (
                   <p className="text-gray-500 italic">Not completed</p>
