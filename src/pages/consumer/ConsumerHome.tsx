@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores/profileStore'
 import { Button } from '@/components/common'
+import { WelcomeModal } from '@/components/layout'
 import type { ProfileSection } from '@/types'
 
 // Section definitions with routes
@@ -58,8 +59,15 @@ export function ConsumerHome() {
     }
   }
 
+  const handleWelcomeComplete = () => {
+    // Auto-navigate to start discovery after welcome
+    navigate('/consumer/discovery/basic-context')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Welcome modal for first-time users */}
+      <WelcomeModal onComplete={handleWelcomeComplete} />
       <header className="bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-gray-900">Pathfinder</h1>
