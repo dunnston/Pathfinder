@@ -179,6 +179,7 @@ export function ClientProfile(): JSX.Element {
                 title="Basic Context"
                 isComplete={!!basicContext?.firstName}
                 defaultExpanded={true}
+                editLink={`/advisor/clients/${client.id}/discovery/basic-context`}
               >
                 {basicContext ? (
                   <dl className="divide-y divide-gray-100">
@@ -242,6 +243,7 @@ export function ClientProfile(): JSX.Element {
               <ProfileSectionCard
                 title="Retirement Vision"
                 isComplete={!!retirementVision?.targetRetirementAge || !!retirementVision?.visionDescription}
+                editLink={`/advisor/clients/${client.id}/discovery/retirement-vision`}
               >
                 {retirementVision ? (
                   <dl className="divide-y divide-gray-100">
@@ -282,6 +284,7 @@ export function ClientProfile(): JSX.Element {
               <ProfileSectionCard
                 title="Planning Preferences"
                 isComplete={!!planningPreferences?.complexityTolerance}
+                editLink={`/advisor/clients/${client.id}/discovery/planning-preferences`}
               >
                 {planningPreferences ? (
                   <dl className="divide-y divide-gray-100">
@@ -320,6 +323,7 @@ export function ClientProfile(): JSX.Element {
               <ProfileSectionCard
                 title="Risk & Income Comfort"
                 isComplete={!!riskComfort?.investmentRiskTolerance}
+                editLink={`/advisor/clients/${client.id}/discovery/risk-comfort`}
               >
                 {riskComfort ? (
                   <dl className="divide-y divide-gray-100">
@@ -365,6 +369,7 @@ export function ClientProfile(): JSX.Element {
               <ProfileSectionCard
                 title="Financial Snapshot"
                 isComplete={!!(financialSnapshot?.investmentAccounts && financialSnapshot.investmentAccounts.length > 0)}
+                editLink={`/advisor/clients/${client.id}/discovery/financial-snapshot`}
               >
                 {financialSnapshot ? (
                   <dl className="divide-y divide-gray-100">

@@ -162,6 +162,7 @@ export function ProfileSummary() {
             title="Basic Context"
             isComplete={!!basicContext?.firstName}
             defaultExpanded={true}
+            editLink="/consumer/discovery/basic-context"
           >
             {basicContext ? (
               <dl className="divide-y divide-gray-100">
@@ -225,6 +226,7 @@ export function ProfileSummary() {
           <ProfileSectionCard
             title="Retirement Vision"
             isComplete={!!retirementVision?.targetRetirementAge || !!retirementVision?.visionDescription}
+            editLink="/consumer/discovery/retirement-vision"
           >
             {retirementVision ? (
               <dl className="divide-y divide-gray-100">
@@ -265,6 +267,7 @@ export function ProfileSummary() {
           <ProfileSectionCard
             title="Planning Preferences"
             isComplete={!!planningPreferences?.complexityTolerance}
+            editLink="/consumer/discovery/planning-preferences"
           >
             {planningPreferences ? (
               <dl className="divide-y divide-gray-100">
@@ -319,6 +322,7 @@ export function ProfileSummary() {
           <ProfileSectionCard
             title="Risk & Income Comfort"
             isComplete={!!riskComfort?.investmentRiskTolerance}
+            editLink="/consumer/discovery/risk-comfort"
           >
             {riskComfort ? (
               <dl className="divide-y divide-gray-100">
@@ -381,6 +385,7 @@ export function ProfileSummary() {
             isComplete={
               !!(financialSnapshot?.investmentAccounts && financialSnapshot.investmentAccounts.length > 0)
             }
+            editLink="/consumer/discovery/financial-snapshot"
           >
             {financialSnapshot ? (
               <dl className="divide-y divide-gray-100">
