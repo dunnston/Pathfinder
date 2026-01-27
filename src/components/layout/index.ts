@@ -20,3 +20,6 @@ export { AdvisorSidebar } from './AdvisorSidebar'
 // Client Components
 export { ClientCard, ClientCardCompact } from './ClientCard'
 export { ClientListView } from './ClientListView'
+
+// Onboarding
+export { WelcomeModal, useHasSeenWelcome, resetWelcomeState } from './WelcomeModal'
