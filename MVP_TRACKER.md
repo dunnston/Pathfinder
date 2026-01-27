@@ -291,7 +291,7 @@ prettier
 | Implement auto-save on each question | Complete | All discovery forms use 1-second debounced auto-save |
 | Add resume capability detection | Complete | ConsumerHome.tsx detects and resumes incomplete profiles |
 | Add welcome/onboarding flow | Not Started | First-time user experience |
-| Add section-jumping from summary | Not Started | Edit completed sections |
+| Add section-jumping from summary | Complete | ProfileSectionCard has editLink prop, both ProfileSummary and ClientProfile use it |
 | Responsive design verification | Not Started | Mobile, tablet, desktop |
 | Keyboard navigation testing | Not Started | Full a11y |
 | Add loading states | Complete | LoadingSpinner, LoadingPage, LoadingOverlay components |
@@ -375,6 +375,7 @@ prettier
 | 2026-01-26 | Phase 9 | Created FinancialSnapshotForm with sub-components (AccountsList, IncomeSourcesList, DebtAssetsList). Added Zod validation schemas for FinancialSnapshot. Created financialSnapshotQuestions data file with account types, balance ranges, income options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. All 5 discovery sections complete! | Start Phase 10: Profile Summary & Classifications |
 | 2026-01-26 | Phase 10 | Created classification service with planningStageClassifier, strategyWeightsCalculator, decisionWindowIdentifier, and profileCompleteness calculator. Created summary components (ProfileSectionCard, StrategyIndicators, DecisionWindowsList). Created displayHelpers service for label formatting. Updated ProfileSummary (consumer) and ClientProfile (advisor) pages to display full profile data with classifications. Added JSON export functionality. TypeScript and lint checks pass. | Create PrintableProfile component, complete Phase 11 polish |
 | 2026-01-26 | Phase 11 | Created PrintableProfile component with print-optimized CSS. Created ErrorBoundary with LoadingSpinner, LoadingPage, LoadingOverlay components. Updated ConsumerHome with progress tracking and resume capability. Updated index.ts exports. TypeScript and lint checks pass. | Complete remaining Phase 11 polish tasks, manual testing |
+| 2026-01-26 | Phase 11 | Added section-jumping from summary pages. Updated ProfileSectionCard with editLink prop. Added edit links to all 5 sections in both ProfileSummary (consumer) and ClientProfile (advisor). TypeScript and lint checks pass. | Welcome/onboarding flow, responsive design verification, manual testing |
 
 ---
 
