@@ -3,7 +3,7 @@
 ## Project Overview
 **Goal:** Build the "Get Organized" module - a discovery wizard that produces a structured Financial Decision Profile. Includes full Advisor Mode with multi-client management and Consumer Mode for individual users.
 
-**Current State:** Phase 9 Complete - Financial Snapshot discovery section is done. All 5 discovery sections complete!
+**Current State:** Phase 10 In Progress - Profile Summary & Classifications mostly complete. All 5 discovery sections done!
 
 **Key Decisions:**
 - Full Advisor/Consumer mode differentiation (different UI, multi-client for advisors)
@@ -256,21 +256,29 @@ prettier
 ---
 
 ### Phase 10: Profile Summary & Classifications
-**Status:** Not Started
+**Status:** In Progress
 **Goal:** Display completed profile and calculate system classifications
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Create planningStageClassifier service | Not Started | Determine stage from data |
-| Create strategyWeightsCalculator service | Not Started | Calculate 5 weight scores |
-| Create decisionWindowIdentifier service | Not Started | Surface upcoming decisions |
-| Create ProfileSummaryView page | Not Started | Human-readable summary |
-| Create ProfileSectionCard component | Not Started | Collapsible section display |
-| Create StrategyIndicators component | Not Started | Visual weight display |
-| Create DecisionWindowsList component | Not Started | |
+| Create planningStageClassifier service | Complete | src/services/classification.ts - classifyPlanningStage() |
+| Create strategyWeightsCalculator service | Complete | src/services/classification.ts - calculateStrategyWeights() |
+| Create decisionWindowIdentifier service | Complete | src/services/classification.ts - identifyDecisionWindows() |
+| Create ProfileSummaryView page | Complete | Updated consumer/ProfileSummary.tsx and advisor/ClientProfile.tsx |
+| Create ProfileSectionCard component | Complete | src/components/summary/ProfileSectionCard.tsx |
+| Create StrategyIndicators component | Complete | src/components/summary/StrategyIndicators.tsx |
+| Create DecisionWindowsList component | Complete | src/components/summary/DecisionWindowsList.tsx |
 | Create PrintableProfile component | Not Started | Clean print layout |
-| Add profile export (JSON download) | Not Started | |
-| Add profile completeness calculation | Not Started | 0-100% indicator |
+| Add profile export (JSON download) | Complete | Export button on both consumer and advisor profile pages |
+| Add profile completeness calculation | Complete | src/services/classification.ts - calculateProfileCompleteness()
+
+**New Files Created:**
+- `src/services/classification.ts` - All classification logic (planning stage, strategy weights, decision windows, completeness)
+- `src/services/displayHelpers.ts` - Display formatting utilities for profile data labels
+- `src/components/summary/ProfileSectionCard.tsx` - Collapsible section card with DataRow, DataList, RankedList helpers
+- `src/components/summary/StrategyIndicators.tsx` - Visual display of strategy weight bars
+- `src/components/summary/DecisionWindowsList.tsx` - Grouped display of upcoming decisions by urgency
+- `src/components/summary/index.ts` - Summary component exports
 
 ---
 
@@ -365,6 +373,7 @@ prettier
 | 2026-01-26 | Phase 7 | Created PlanningPreferencesForm with sub-components (TradeoffExercise, ValueRanking). Added Zod validation schemas for PlanningPreferences. Created planningPreferencesQuestions data file with tradeoff pairs, value options, comfort levels. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 8: Discovery Section 4 - Risk & Income Comfort |
 | 2026-01-26 | Phase 8 | Created RiskComfortForm with sub-components (ScenarioChoice, TimingFlexibilityFields). Added Zod validation schemas for RiskComfort. Created riskComfortQuestions data file with scenarios, risk scales, flexibility options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. | Start Phase 9: Discovery Section 5 - Financial Snapshot |
 | 2026-01-26 | Phase 9 | Created FinancialSnapshotForm with sub-components (AccountsList, IncomeSourcesList, DebtAssetsList). Added Zod validation schemas for FinancialSnapshot. Created financialSnapshotQuestions data file with account types, balance ranges, income options. Wired up consumer and advisor discovery flows. TypeScript and lint checks pass. All 5 discovery sections complete! | Start Phase 10: Profile Summary & Classifications |
+| 2026-01-26 | Phase 10 | Created classification service with planningStageClassifier, strategyWeightsCalculator, decisionWindowIdentifier, and profileCompleteness calculator. Created summary components (ProfileSectionCard, StrategyIndicators, DecisionWindowsList). Created displayHelpers service for label formatting. Updated ProfileSummary (consumer) and ClientProfile (advisor) pages to display full profile data with classifications. Added JSON export functionality. TypeScript and lint checks pass. | Create PrintableProfile component, complete Phase 11 polish |
 
 ---
 
