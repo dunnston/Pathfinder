@@ -33,3 +33,6 @@ export { TradeoffSelector } from './TradeoffSelector'
 export { ScaleSlider, LikertScale } from './ScaleSlider'
 export { RangeSelector, FinancialRangeSelector } from './RangeSelector'
 export { RankingList } from './RankingList'
+
+// Error handling and loading
+export { ErrorBoundary, LoadingSpinner, LoadingPage, LoadingOverlay } from './ErrorBoundary'
