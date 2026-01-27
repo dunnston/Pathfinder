@@ -24,23 +24,30 @@ function getSectionById(sectionId: string): DiscoverySection | undefined {
 
 // Convert section ID to URL slug
 function sectionToSlug(sectionId: string): string {
-  return sectionId.replace(/([A-Z])/g, '-$1').toLowerCase()
+  return sectionId.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
 }
 
 export function ClientDiscovery(): JSX.Element {
   const { id, section: sectionSlug } = useParams<{ id: string; section: string }>()
   const navigate = useNavigate()
   const { getClient, updateClient, updateSectionProgress } = useClientStore()
-  const { currentProfile, updateSection, initializeProfile } = useProfileStore()
+  const { currentProfile, updateSection, loadClientProfile, saveClientProfile, _currentClientId } = useProfileStore()
 
   const client = id ? getClient(id) : null
 
-  // Initialize or load profile for this client
+  // Load profile for this client (with client isolation)
   useEffect(() => {
-    if (client && (!currentProfile || currentProfile.userId !== client.id)) {
-      initializeProfile(client.id)
+    if (client && _currentClientId !== client.id) {
+      loadClientProfile(client.id)
     }
-  }, [client, currentProfile, initializeProfile])
+  }, [client, _currentClientId, loadClientProfile])
+
+  // Save profile when unmounting
+  useEffect(() => {
+    return () => {
+      saveClientProfile()
+    }
+  }, [saveClientProfile])
 
   if (!client) {
     return (

@@ -6,6 +6,21 @@
 import { z } from 'zod'
 
 // ============================================================
+// String Length Limits (Security)
+// ============================================================
+
+/** Standard string length limits to prevent DoS and storage abuse */
+export const STRING_LIMITS = {
+  NAME: 100,
+  SHORT_TEXT: 200,
+  MEDIUM_TEXT: 1000,
+  LONG_TEXT: 5000,
+  EMAIL: 254,
+  PHONE: 20,
+  NOTES: 10000,
+} as const
+
+// ============================================================
 // Common Validators
 // ============================================================
 
@@ -53,21 +68,21 @@ export const retirementSystemSchema = z.enum([
 
 /** Spouse information schema */
 export const spouseInfoSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
+  firstName: z.string().min(1, 'First name is required').max(STRING_LIMITS.NAME, `Maximum ${STRING_LIMITS.NAME} characters`),
   birthDate: birthDate,
   employmentStatus: employmentStatusSchema,
   hasPension: z.boolean(),
-  pensionDetails: z.string().optional(),
+  pensionDetails: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Federal employee information schema */
 export const federalEmployeeInfoSchema = z.object({
-  agency: z.string().min(1, 'Agency is required'),
+  agency: z.string().min(1, 'Agency is required').max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
   yearsOfService: z.number()
     .min(0, 'Years of service cannot be negative')
     .max(50, 'Please check years of service'),
   retirementSystem: retirementSystemSchema,
-  payGrade: z.string().min(1, 'Pay grade is required'),
+  payGrade: z.string().min(1, 'Pay grade is required').max(20, 'Maximum 20 characters'),
   step: z.number().min(1).max(10),
   isLawEnforcement: z.boolean(),
   hasMilitaryService: z.boolean(),
@@ -76,23 +91,23 @@ export const federalEmployeeInfoSchema = z.object({
 
 /** Dependent schema */
 export const dependentSchema = z.object({
-  relationship: z.string().min(1, 'Relationship is required'),
+  relationship: z.string().min(1, 'Relationship is required').max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
   birthDate: birthDate,
   financiallyDependent: z.boolean(),
 })
 
 /** Complete Basic Context schema */
 export const basicContextSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().min(1, 'First name is required').max(STRING_LIMITS.NAME, `Maximum ${STRING_LIMITS.NAME} characters`),
+  lastName: z.string().min(1, 'Last name is required').max(STRING_LIMITS.NAME, `Maximum ${STRING_LIMITS.NAME} characters`),
   birthDate: birthDate,
   maritalStatus: maritalStatusSchema,
   spouse: spouseInfoSchema.optional(),
-  dependents: z.array(dependentSchema).default([]),
-  occupation: z.string().min(1, 'Occupation is required'),
+  dependents: z.array(dependentSchema).max(20, 'Maximum 20 dependents').default([]),
+  occupation: z.string().min(1, 'Occupation is required').max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
   federalEmployee: federalEmployeeInfoSchema.nullable(),
-  hobbiesInterests: z.array(z.string()).optional(),
-  communityInvolvement: z.string().optional(),
+  hobbiesInterests: z.array(z.string().max(STRING_LIMITS.SHORT_TEXT)).max(20, 'Maximum 20 items').optional(),
+  communityInvolvement: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 }).refine(
   (data) => {
     // If married or domestic partnership, spouse should be provided
@@ -115,19 +130,19 @@ export type BasicContextFormData = z.infer<typeof basicContextSchema>
 // ============================================================
 
 export const basicContextFieldSchemas = {
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().min(1, 'First name is required').max(STRING_LIMITS.NAME),
+  lastName: z.string().min(1, 'Last name is required').max(STRING_LIMITS.NAME),
   birthDate: birthDate,
   maritalStatus: maritalStatusSchema,
-  occupation: z.string().min(1, 'Occupation is required'),
+  occupation: z.string().min(1, 'Occupation is required').max(STRING_LIMITS.SHORT_TEXT),
   // Federal employee fields
-  agency: z.string().min(1, 'Agency is required'),
+  agency: z.string().min(1, 'Agency is required').max(STRING_LIMITS.SHORT_TEXT),
   yearsOfService: z.number().min(0, 'Years of service cannot be negative').max(50),
   retirementSystem: retirementSystemSchema,
-  payGrade: z.string().min(1, 'Pay grade is required'),
+  payGrade: z.string().min(1, 'Pay grade is required').max(20),
   step: z.number().min(1).max(10),
   // Spouse fields
-  spouseFirstName: z.string().min(1, 'First name is required'),
+  spouseFirstName: z.string().min(1, 'First name is required').max(STRING_LIMITS.NAME),
   spouseBirthDate: birthDate,
   spouseEmploymentStatus: employmentStatusSchema,
 }
@@ -207,12 +222,12 @@ export const concernSeveritySchema = z.enum([
 export const retirementConcernSchema = z.object({
   concern: concernTypeSchema,
   severity: concernSeveritySchema,
-  notes: z.string().optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Lifestyle priority schema */
 export const lifestylePrioritySchema = z.object({
-  priority: z.string().min(1, 'Priority is required'),
+  priority: z.string().min(1, 'Priority is required').max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
   rank: z.number().min(1).max(10),
 })
 
@@ -223,16 +238,18 @@ export const retirementVisionSchema = z.object({
     .max(85, 'Target retirement age must be 85 or less'),
   targetRetirementYear: z.number().optional(),
   retirementFlexibility: flexibilitySchema,
-  visionDescription: z.string().optional(),
+  visionDescription: z.string().max(STRING_LIMITS.LONG_TEXT, `Maximum ${STRING_LIMITS.LONG_TEXT} characters`).optional(),
   topConcerns: z.array(retirementConcernSchema)
     .min(1, 'Please select at least one concern')
     .max(5, 'Please select no more than 5 concerns'),
-  mustHaveOutcomes: z.array(z.string())
-    .min(1, 'Please add at least one must-have outcome'),
-  niceToHaveOutcomes: z.array(z.string()).default([]),
+  mustHaveOutcomes: z.array(z.string().max(STRING_LIMITS.MEDIUM_TEXT))
+    .min(1, 'Please add at least one must-have outcome')
+    .max(10, 'Maximum 10 outcomes'),
+  niceToHaveOutcomes: z.array(z.string().max(STRING_LIMITS.MEDIUM_TEXT)).max(10, 'Maximum 10 outcomes').default([]),
   lifestylePriorities: z.array(lifestylePrioritySchema)
-    .min(3, 'Please rank at least 3 priorities'),
-  financialPurposeStatement: z.string().optional(),
+    .min(3, 'Please rank at least 3 priorities')
+    .max(10, 'Maximum 10 priorities'),
+  financialPurposeStatement: z.string().max(STRING_LIMITS.LONG_TEXT, `Maximum ${STRING_LIMITS.LONG_TEXT} characters`).optional(),
 })
 
 /** Type inferred from the schema */
@@ -346,10 +363,10 @@ export const tradeoffPositionSchema = z.enum([
 
 /** Tradeoff preference schema */
 export const tradeoffPreferenceSchema = z.object({
-  tradeoff: z.string().min(1),
+  tradeoff: z.string().min(1).max(STRING_LIMITS.SHORT_TEXT),
   preference: tradeoffPositionSchema,
-  optionA: z.string().min(1),
-  optionB: z.string().min(1),
+  optionA: z.string().min(1).max(STRING_LIMITS.SHORT_TEXT),
+  optionB: z.string().min(1).max(STRING_LIMITS.SHORT_TEXT),
 })
 
 /** Complete Planning Preferences schema */
@@ -443,7 +460,7 @@ export const timingFlexibilitySchema = z.object({
   willingToDelay: z.boolean(),
   maxDelayYears: z.number().min(0).max(10),
   willingToRetireEarly: z.boolean(),
-  conditions: z.string().optional(),
+  conditions: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Complete Risk Comfort schema */
@@ -582,45 +599,45 @@ export const lifeInsuranceTypeSchema = z.enum([
 /** Income source schema */
 export const incomeSourceSchema = z.object({
   type: incomeSourceTypeSchema,
-  description: z.string(),
-  annualAmount: z.number().min(0),
+  description: z.string().max(STRING_LIMITS.SHORT_TEXT, `Maximum ${STRING_LIMITS.SHORT_TEXT} characters`),
+  annualAmount: z.number().min(0).max(100000000, 'Please enter a valid amount'),
   isPrimary: z.boolean(),
 })
 
 /** Expected retirement income schema */
 export const expectedRetirementIncomeSchema = z.object({
   type: retirementIncomeTypeSchema,
-  estimatedAnnualAmount: z.number().min(0).optional(),
+  estimatedAnnualAmount: z.number().min(0).max(100000000, 'Please enter a valid amount').optional(),
   startAge: z.number().min(50).max(85).optional(),
   isGuaranteed: z.boolean(),
-  notes: z.string().optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Account summary schema */
 export const accountSummarySchema = z.object({
   type: accountTypeSchema,
   approximateBalance: balanceRangeSchema,
-  notes: z.string().optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Debt summary schema */
 export const debtSummarySchema = z.object({
   type: debtTypeSchema,
   approximateBalance: balanceRangeSchema,
-  yearsRemaining: z.number().min(0).optional(),
-  notes: z.string().optional(),
+  yearsRemaining: z.number().min(0).max(100, 'Please enter a valid number of years').optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Asset summary schema */
 export const assetSummarySchema = z.object({
   type: assetTypeSchema,
   approximateValue: balanceRangeSchema.optional(),
-  notes: z.string().optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Emergency reserves schema */
 export const emergencyReservesSchema = z.object({
-  monthsOfExpenses: z.number().min(0),
+  monthsOfExpenses: z.number().min(0).max(120, 'Please enter a valid number of months'),
   location: reserveLocationSchema,
 })
 
@@ -630,19 +647,22 @@ export const insuranceSummarySchema = z.object({
   lifeInsuranceType: lifeInsuranceTypeSchema.optional(),
   hasLongTermCare: z.boolean(),
   hasDisability: z.boolean(),
-  notes: z.string().optional(),
+  notes: z.string().max(STRING_LIMITS.MEDIUM_TEXT, `Maximum ${STRING_LIMITS.MEDIUM_TEXT} characters`).optional(),
 })
 
 /** Complete Financial Snapshot schema */
 export const financialSnapshotSchema = z.object({
   incomeSourcesCurrent: z.array(incomeSourceSchema)
-    .min(1, 'Please add at least one current income source'),
+    .min(1, 'Please add at least one current income source')
+    .max(20, 'Maximum 20 income sources'),
   incomeSourcesRetirement: z.array(expectedRetirementIncomeSchema)
-    .min(1, 'Please add at least one expected retirement income source'),
+    .min(1, 'Please add at least one expected retirement income source')
+    .max(20, 'Maximum 20 retirement income sources'),
   investmentAccounts: z.array(accountSummarySchema)
-    .min(1, 'Please add at least one investment account'),
-  debts: z.array(debtSummarySchema).default([]),
-  majorAssets: z.array(assetSummarySchema).default([]),
+    .min(1, 'Please add at least one investment account')
+    .max(50, 'Maximum 50 investment accounts'),
+  debts: z.array(debtSummarySchema).max(30, 'Maximum 30 debt entries').default([]),
+  majorAssets: z.array(assetSummarySchema).max(30, 'Maximum 30 asset entries').default([]),
   emergencyReserves: emergencyReservesSchema,
   insuranceCoverage: insuranceSummarySchema,
 })
@@ -682,4 +702,38 @@ export function validateFinancialSnapshot(data: unknown): {
   }
 
   return { success: false, errors }
+}
+
+// ============================================================
+// Form Utilities
+// ============================================================
+
+/**
+ * Scroll to the first validation error on the page.
+ * Tries multiple strategies to find the error element.
+ */
+export function scrollToFirstError(errors: Record<string, string>): void {
+  const firstErrorKey = Object.keys(errors)[0]
+  if (!firstErrorKey) return
+
+  // Convert dot notation to dash for HTML IDs (e.g., "spouse.firstName" -> "spouse-firstName")
+  const htmlId = firstErrorKey.replace(/\./g, '-')
+
+  // Try multiple strategies to find the element
+  const element =
+    document.getElementById(firstErrorKey) ||
+    document.getElementById(htmlId) ||
+    document.querySelector(`[name="${firstErrorKey}"]`) ||
+    document.querySelector(`[id*="${firstErrorKey}"]`)
+
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    // Focus the element if it's focusable
+    if (element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement) {
+      setTimeout(() => element.focus(), 300)
+    }
+  }
 }

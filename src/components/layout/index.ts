@@ -22,4 +22,6 @@ export { ClientCard, ClientCardCompact } from './ClientCard'
 export { ClientListView } from './ClientListView'
 
 // Onboarding
-export { WelcomeModal, useHasSeenWelcome, resetWelcomeState } from './WelcomeModal'
+export { WelcomeModal } from './WelcomeModal'
+// SEC-27: Hooks extracted to separate file - re-export from hooks
+export { useHasSeenWelcome, useWelcomeModal, resetWelcomeState } from '@/hooks/useWelcome'

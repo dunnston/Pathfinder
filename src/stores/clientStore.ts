@@ -13,12 +13,16 @@ import type {
   CreateClientInput,
   SectionProgress,
 } from '@/types';
+import { createEncryptedStorage } from '@/services/encryption';
+import { sanitizeObject } from '@/services/sanitization';
 
 interface ClientState {
   clients: Client[];
   selectedClientId: string | null;
   filters: ClientFilters;
   sortOptions: ClientSortOptions;
+  /** Whether the store has been hydrated from localStorage */
+  _hasHydrated: boolean;
 }
 
 interface ClientActions {
@@ -38,7 +42,7 @@ interface ClientActions {
 type ClientStore = ClientState & ClientActions;
 
 function generateId(): string {
-  return `client_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `client_${crypto.randomUUID()}`;
 }
 
 function calculateProfileCompletion(sectionProgress: SectionProgress): number {
@@ -56,6 +60,7 @@ const initialState: ClientState = {
     field: 'updatedAt',
     direction: 'desc',
   },
+  _hasHydrated: false,
 };
 
 export const useClientStore = create<ClientStore>()(
@@ -64,13 +69,15 @@ export const useClientStore = create<ClientStore>()(
       ...initialState,
 
       addClient: (input) => {
+        // SEC-2: Sanitize input to prevent prototype pollution
+        const sanitizedInput = sanitizeObject(input);
         const now = new Date();
         const newClient: Client = {
           id: generateId(),
-          name: input.name,
-          email: input.email,
-          phone: input.phone,
-          advisorNotes: input.advisorNotes,
+          name: sanitizedInput.name,
+          email: sanitizedInput.email,
+          phone: sanitizedInput.phone,
+          advisorNotes: sanitizedInput.advisorNotes,
           status: 'pending',
           profileCompletion: 0,
           sectionProgress: {},
@@ -87,13 +94,17 @@ export const useClientStore = create<ClientStore>()(
       },
 
       updateClient: (clientId, updates) =>
-        set((state) => ({
-          clients: state.clients.map((client) =>
-            client.id === clientId
-              ? { ...client, ...updates, updatedAt: new Date() }
-              : client
-          ),
-        })),
+        set((state) => {
+          // SEC-2: Sanitize updates to prevent prototype pollution
+          const sanitizedUpdates = sanitizeObject(updates);
+          return {
+            clients: state.clients.map((client) =>
+              client.id === clientId
+                ? { ...client, ...sanitizedUpdates, updatedAt: new Date() }
+                : client
+            ),
+          };
+        }),
 
       deleteClient: (clientId) =>
         set((state) => ({
@@ -202,25 +213,39 @@ export const useClientStore = create<ClientStore>()(
     }),
     {
       name: 'pathfinder-clients',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state._hasHydrated = true;
+        }
+      },
+      // SEC-1: Use encrypted storage for client data
       storage: {
-        getItem: (name) => {
-          const str = localStorage.getItem(name);
+        getItem: async (name) => {
+          const encryptedStorage = createEncryptedStorage();
+          const str = await encryptedStorage.getItem(name);
           if (!str) return null;
-          const data = JSON.parse(str);
-          if (data.state?.clients) {
-            data.state.clients = data.state.clients.map((client: Client) => ({
-              ...client,
-              createdAt: new Date(client.createdAt),
-              updatedAt: new Date(client.updatedAt),
-            }));
+
+          try {
+            const data = JSON.parse(str);
+            if (data.state?.clients) {
+              data.state.clients = data.state.clients.map((client: Client) => ({
+                ...client,
+                createdAt: new Date(client.createdAt),
+                updatedAt: new Date(client.updatedAt),
+              }));
+            }
+            return data;
+          } catch {
+            return null;
           }
-          return data;
         },
-        setItem: (name, value) => {
-          localStorage.setItem(name, JSON.stringify(value));
+        setItem: async (name, value) => {
+          const encryptedStorage = createEncryptedStorage();
+          await encryptedStorage.setItem(name, JSON.stringify(value));
         },
         removeItem: (name) => {
-          localStorage.removeItem(name);
+          const encryptedStorage = createEncryptedStorage();
+          encryptedStorage.removeItem(name);
         },
       },
     }

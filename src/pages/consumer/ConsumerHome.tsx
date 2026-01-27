@@ -1,6 +1,7 @@
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores/profileStore'
-import { Button } from '@/components/common'
+import { Button, Modal, ModalFooter } from '@/components/common'
 import { WelcomeModal } from '@/components/layout'
 import type { ProfileSection, PartialFinancialProfile } from '@/types'
 
@@ -43,20 +44,30 @@ function isSectionComplete(profile: PartialFinancialProfile | null, section: Pro
 export function ConsumerHome() {
   const navigate = useNavigate()
   const { currentProfile, clearProfile } = useProfileStore()
+  const [showClearModal, setShowClearModal] = useState(false)
 
-  // Calculate progress
-  const completedSections = SECTIONS.filter(s => isSectionComplete(currentProfile, s.key))
-  const progressPercent = Math.round((completedSections.length / SECTIONS.length) * 100)
-  const hasProgress = currentProfile && completedSections.length > 0
+  // Calculate progress with useMemo for proper dependency tracking (UX-14)
+  const { completedSections, progressPercent, hasProgress } = useMemo(() => {
+    const completed = SECTIONS.filter(s => isSectionComplete(currentProfile, s.key))
+    const percent = Math.round((completed.length / SECTIONS.length) * 100)
+    return {
+      completedSections: completed,
+      progressPercent: percent,
+      hasProgress: currentProfile !== null && completed.length > 0
+    }
+  }, [currentProfile])
 
   // Find first incomplete section for resume
   const firstIncomplete = SECTIONS.find(s => !isSectionComplete(currentProfile, s.key))
-  const resumeRoute = firstIncomplete?.route ?? '/consumer/profile-summary'
+  const resumeRoute = firstIncomplete?.route ?? '/consumer/profile'
 
   const handleStartFresh = () => {
-    if (confirm('This will clear your current progress. Are you sure?')) {
-      clearProfile()
-    }
+    setShowClearModal(true)
+  }
+
+  const handleConfirmClear = () => {
+    clearProfile()
+    setShowClearModal(false)
   }
 
   const handleWelcomeComplete = () => {
@@ -68,20 +79,24 @@ export function ConsumerHome() {
     <div className="min-h-screen bg-gray-50">
       {/* Welcome modal for first-time users */}
       <WelcomeModal onComplete={handleWelcomeComplete} />
-      <header className="bg-white shadow-sm">
+      {/* SEC-26: Accessibility banner landmark */}
+      <header className="bg-white shadow-sm" role="banner">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-gray-900">Pathfinder</h1>
-          <button
-            onClick={() => navigate('/')}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Switch Mode
-          </button>
+          <nav aria-label="Mode navigation">
+            <button
+              onClick={() => navigate('/')}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Switch Mode
+            </button>
+          </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* SEC-26: Accessibility main landmark */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" role="main" aria-labelledby="welcome-heading">
         <div className="bg-white rounded-xl shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Your Financial Journey</h2>
+          <h2 id="welcome-heading" className="text-2xl font-bold text-gray-900 mb-4">Welcome to Your Financial Journey</h2>
           <p className="text-gray-600 mb-6">
             Let's start by building your Financial Decision Profile. This helps us understand your
             situation, goals, and preferences so we can guide you through important decisions.
@@ -157,7 +172,7 @@ export function ConsumerHome() {
                 Your profile is complete! You can view your summary or make changes to any section.
               </p>
               <button
-                onClick={() => navigate('/consumer/profile-summary')}
+                onClick={() => navigate('/consumer/profile')}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
                 View Full Profile Summary →
@@ -166,6 +181,40 @@ export function ConsumerHome() {
           )}
         </div>
       </main>
+
+      {/* Clear Progress Confirmation Modal (UX-23) */}
+      <Modal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        title="Start Fresh?"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-gray-700">
+                This will permanently delete all your current progress and cannot be undone.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                You have completed {completedSections.length} of {SECTIONS.length} sections.
+              </p>
+            </div>
+          </div>
+        </div>
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setShowClearModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleConfirmClear} className="bg-red-600 hover:bg-red-700">
+            Yes, Start Fresh
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }

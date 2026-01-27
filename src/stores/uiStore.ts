@@ -91,9 +91,9 @@ interface UIActions {
 
 type UIStore = UIState & UIActions;
 
-// Generate notification ID
+// Generate cryptographically secure notification ID
 function generateNotificationId(): string {
-  return `notif_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `notif_${crypto.randomUUID()}`;
 }
 
 const initialState: UIState = {

@@ -6,6 +6,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserRole, UserPreferences } from '@/types';
+import { createEncryptedStorage } from '@/services/encryption';
+import { sanitizeObject } from '@/services/sanitization';
 
 interface UserState {
   // Current mode (consumer or advisor)
@@ -14,6 +16,8 @@ interface UserState {
   preferences: UserPreferences;
   // Whether the user has completed onboarding
   hasCompletedOnboarding: boolean;
+  /** Whether the store has been hydrated from localStorage */
+  _hasHydrated: boolean;
 }
 
 interface UserActions {
@@ -39,6 +43,7 @@ const initialState: UserState = {
   mode: 'consumer',
   preferences: defaultPreferences,
   hasCompletedOnboarding: false,
+  _hasHydrated: false,
 };
 
 export const useUserStore = create<UserStore>()(
@@ -49,9 +54,13 @@ export const useUserStore = create<UserStore>()(
       setMode: (mode) => set({ mode }),
 
       updatePreferences: (newPreferences) =>
-        set((state) => ({
-          preferences: { ...state.preferences, ...newPreferences },
-        })),
+        set((state) => {
+          // SEC-2: Sanitize preferences to prevent prototype pollution
+          const sanitizedPreferences = sanitizeObject(newPreferences);
+          return {
+            preferences: { ...state.preferences, ...sanitizedPreferences },
+          };
+        }),
 
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),
 
@@ -59,6 +68,33 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'pathfinder-user',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state._hasHydrated = true;
+        }
+      },
+      // SEC-1: Use encrypted storage for user preferences
+      storage: {
+        getItem: async (name) => {
+          const encryptedStorage = createEncryptedStorage();
+          const str = await encryptedStorage.getItem(name);
+          if (!str) return null;
+
+          try {
+            return JSON.parse(str);
+          } catch {
+            return null;
+          }
+        },
+        setItem: async (name, value) => {
+          const encryptedStorage = createEncryptedStorage();
+          await encryptedStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          const encryptedStorage = createEncryptedStorage();
+          encryptedStorage.removeItem(name);
+        },
+      },
     }
   )
 );

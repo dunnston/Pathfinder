@@ -15,6 +15,8 @@ import type {
   RiskComfort,
   FinancialSnapshot,
 } from '@/types';
+import { createEncryptedStorage } from '@/services/encryption';
+import { sanitizeObject } from '@/services/sanitization';
 
 // Type for section data mapping
 type SectionDataMap = {
@@ -30,6 +32,10 @@ interface ProfileState {
   currentProfile: PartialFinancialProfile | null;
   // Whether there are unsaved changes
   hasUnsavedChanges: boolean;
+  // Whether the store has been hydrated from localStorage
+  _hasHydrated: boolean;
+  // Current client ID for advisor mode (null for consumer mode)
+  _currentClientId: string | null;
 }
 
 interface ProfileActions {
@@ -50,23 +56,38 @@ interface ProfileActions {
   markSaved: () => void;
   // Clear the current profile
   clearProfile: () => void;
+  // Load a client's profile from client-specific storage (advisor mode)
+  loadClientProfile: (clientId: string) => void;
+  // Save the current profile to client-specific storage (advisor mode)
+  saveClientProfile: () => void;
 }
 
 type ProfileStore = ProfileState & ProfileActions;
 
-// Generate a simple unique ID
+// Generate a cryptographically secure unique ID
 function generateId(): string {
-  return `profile_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `profile_${crypto.randomUUID()}`;
 }
 
 const initialState: ProfileState = {
   currentProfile: null,
   hasUnsavedChanges: false,
+  _hasHydrated: false,
+  _currentClientId: null,
 };
+
+// Helper to restore dates from stored profile
+function restoreProfileDates(profile: PartialFinancialProfile): PartialFinancialProfile {
+  return {
+    ...profile,
+    createdAt: profile.createdAt ? new Date(profile.createdAt) : new Date(),
+    updatedAt: profile.updatedAt ? new Date(profile.updatedAt) : new Date(),
+  };
+}
 
 export const useProfileStore = create<ProfileStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
       initializeProfile: (userId) =>
@@ -79,6 +100,7 @@ export const useProfileStore = create<ProfileStore>()(
             updatedAt: new Date(),
           },
           hasUnsavedChanges: false,
+          _currentClientId: null, // Consumer mode
         }),
 
       loadProfile: (profile) =>
@@ -91,12 +113,15 @@ export const useProfileStore = create<ProfileStore>()(
         set((state) => {
           if (!state.currentProfile) return state;
 
+          // SEC-2: Sanitize data to prevent prototype pollution
+          const sanitizedData = sanitizeObject(data);
+
           return {
             currentProfile: {
               ...state.currentProfile,
               [section]: {
                 ...state.currentProfile[section],
-                ...data,
+                ...sanitizedData,
               },
               status: state.currentProfile.status === 'not_started'
                 ? 'in_progress'
@@ -138,28 +163,106 @@ export const useProfileStore = create<ProfileStore>()(
       markSaved: () => set({ hasUnsavedChanges: false }),
 
       clearProfile: () => set(initialState),
+
+      loadClientProfile: (clientId: string) => {
+        // First, save current client's profile if there is one
+        const currentState = get();
+        if (currentState._currentClientId && currentState.currentProfile) {
+          const storageKey = `pathfinder-client-${currentState._currentClientId}`;
+          try {
+            localStorage.setItem(storageKey, JSON.stringify({
+              state: { currentProfile: currentState.currentProfile }
+            }));
+          } catch {
+            // Silently fail - storage might be full
+          }
+        }
+
+        // Now load the new client's profile
+        const storageKey = `pathfinder-client-${clientId}`;
+        const stored = localStorage.getItem(storageKey);
+
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            const profile = data.state?.currentProfile;
+            if (profile) {
+              set({
+                currentProfile: restoreProfileDates(profile),
+                hasUnsavedChanges: false,
+                _currentClientId: clientId,
+              });
+              return;
+            }
+          } catch {
+            // Fall through to initialize new profile
+          }
+        }
+
+        // Initialize new profile if none exists
+        set({
+          currentProfile: {
+            id: generateId(),
+            userId: clientId,
+            status: 'not_started',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          hasUnsavedChanges: false,
+          _currentClientId: clientId,
+        });
+      },
+
+      saveClientProfile: () => {
+        const state = get();
+        if (!state.currentProfile || !state._currentClientId) return;
+
+        const storageKey = `pathfinder-client-${state._currentClientId}`;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({
+            state: { currentProfile: state.currentProfile }
+          }));
+          set({ hasUnsavedChanges: false });
+        } catch {
+          // Silently fail - storage might be full
+        }
+      },
     }),
     {
       name: 'pathfinder-profile',
-      // Custom serialization for Date objects
+      // Track when hydration completes
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state._hasHydrated = true;
+        }
+      },
+      // SEC-1: Use encrypted storage for sensitive financial data
       storage: {
-        getItem: (name) => {
-          const str = localStorage.getItem(name);
+        getItem: async (name) => {
+          const encryptedStorage = createEncryptedStorage();
+          const str = await encryptedStorage.getItem(name);
           if (!str) return null;
-          const data = JSON.parse(str);
-          // Restore Date objects
-          if (data.state?.currentProfile) {
-            const profile = data.state.currentProfile;
-            if (profile.createdAt) profile.createdAt = new Date(profile.createdAt);
-            if (profile.updatedAt) profile.updatedAt = new Date(profile.updatedAt);
+
+          try {
+            const data = JSON.parse(str);
+            // Restore Date objects
+            if (data.state?.currentProfile) {
+              const profile = data.state.currentProfile;
+              if (profile.createdAt) profile.createdAt = new Date(profile.createdAt);
+              if (profile.updatedAt) profile.updatedAt = new Date(profile.updatedAt);
+            }
+            return data;
+          } catch {
+            return null;
           }
-          return data;
         },
-        setItem: (name, value) => {
-          localStorage.setItem(name, JSON.stringify(value));
+        setItem: async (name, value) => {
+          const encryptedStorage = createEncryptedStorage();
+          await encryptedStorage.setItem(name, JSON.stringify(value));
         },
         removeItem: (name) => {
-          localStorage.removeItem(name);
+          const encryptedStorage = createEncryptedStorage();
+          encryptedStorage.removeItem(name);
         },
       },
     }

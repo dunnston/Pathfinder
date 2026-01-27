@@ -87,7 +87,7 @@ export function ClientDetail(): JSX.Element {
                     const sectionProgress = client.sectionProgress[section.id] || 0
                     const isComplete = sectionProgress === 1
                     const isStarted = sectionProgress > 0
-                    const slug = section.id.replace(/([A-Z])/g, '-$1').toLowerCase()
+                    const slug = section.id.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
 
                     return (
                       <Link

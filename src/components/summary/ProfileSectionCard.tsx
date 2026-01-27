@@ -3,7 +3,7 @@
  * Collapsible card for displaying a profile section's data
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/common';
 
@@ -87,18 +87,20 @@ interface DataRowProps {
   className?: string;
 }
 
-export function DataRow({ label, value, className = '' }: DataRowProps) {
+// UX-19: Fix long text breaking layout with proper word-wrap
+// SEC-10: Memoize to prevent unnecessary re-renders
+export const DataRow = memo(function DataRow({ label, value, className = '' }: DataRowProps) {
   return (
     <div className={`flex flex-col sm:flex-row sm:items-start py-2 ${className}`}>
       <dt className="text-sm font-medium text-gray-500 sm:w-48 sm:flex-shrink-0">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-gray-900 sm:mt-0">
+      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:flex-1 break-words overflow-wrap-anywhere min-w-0">
         {value || <span className="text-gray-400 italic">Not provided</span>}
       </dd>
     </div>
   );
-}
+})
 
 /** Helper component for displaying a list of items */
 interface DataListProps {
@@ -106,17 +108,19 @@ interface DataListProps {
   items: string[];
 }
 
-export function DataList({ label, items }: DataListProps) {
+// UX-19: Fix long text breaking layout
+// SEC-10: Memoize to prevent unnecessary re-renders
+export const DataList = memo(function DataList({ label, items }: DataListProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-start py-2">
       <dt className="text-sm font-medium text-gray-500 sm:w-48 sm:flex-shrink-0">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-gray-900 sm:mt-0">
+      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:flex-1 break-words min-w-0">
         {items.length > 0 ? (
           <ul className="list-disc list-inside space-y-1">
             {items.map((item, index) => (
-              <li key={index}>{item}</li>
+              <li key={index} className="break-words">{item}</li>
             ))}
           </ul>
         ) : (
@@ -125,7 +129,7 @@ export function DataList({ label, items }: DataListProps) {
       </dd>
     </div>
   );
-}
+})
 
 /** Helper component for displaying a ranked list */
 interface RankedListProps {
@@ -133,7 +137,9 @@ interface RankedListProps {
   items: { rank: number; label: string }[];
 }
 
-export function RankedList({ label, items }: RankedListProps) {
+// UX-19: Fix long text breaking layout
+// SEC-10: Memoize to prevent unnecessary re-renders
+export const RankedList = memo(function RankedList({ label, items }: RankedListProps) {
   const sortedItems = [...items].sort((a, b) => a.rank - b.rank);
 
   return (
@@ -141,11 +147,11 @@ export function RankedList({ label, items }: RankedListProps) {
       <dt className="text-sm font-medium text-gray-500 sm:w-48 sm:flex-shrink-0">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-gray-900 sm:mt-0">
+      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:flex-1 break-words min-w-0">
         {sortedItems.length > 0 ? (
           <ol className="list-decimal list-inside space-y-1">
             {sortedItems.map((item) => (
-              <li key={item.rank}>{item.label}</li>
+              <li key={item.rank} className="break-words">{item.label}</li>
             ))}
           </ol>
         ) : (
@@ -154,4 +160,4 @@ export function RankedList({ label, items }: RankedListProps) {
       </dd>
     </div>
   );
-}
+})

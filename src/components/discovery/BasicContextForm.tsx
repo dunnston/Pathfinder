@@ -3,8 +3,8 @@
  * Main form for Section 1 of the Discovery Wizard
  */
 
-import { useState, useEffect, useCallback } from 'react'
-import { Input, Select, DateInput, TextArea, QuestionCard } from '@/components/common'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Input, Select, DateInput, TextArea, QuestionCard, Button } from '@/components/common'
 import { FederalEmployeeFields } from './FederalEmployeeFields'
 import { SpouseFields } from './SpouseFields'
 import { DependentsList } from './DependentsList'
@@ -111,17 +111,54 @@ export function BasicContextForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Set<string>>(new Set())
 
+  // Refs for auto-save management
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const formDataRef = useRef(formData)
+  const onAutoSaveRef = useRef(onAutoSave)
+
+  // Keep refs updated
+  useEffect(() => {
+    formDataRef.current = formData
+  }, [formData])
+
+  useEffect(() => {
+    onAutoSaveRef.current = onAutoSave
+  }, [onAutoSave])
+
   // Auto-save on changes (debounced)
   useEffect(() => {
     if (!onAutoSave) return
 
-    const timer = setTimeout(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
       const partialData = toBasicContext(formData)
       onAutoSave(partialData)
     }, 1000)
 
-    return () => clearTimeout(timer)
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+    }
   }, [formData, onAutoSave])
+
+  // Flush auto-save on unmount
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+      // Flush final save on unmount
+      if (onAutoSaveRef.current) {
+        const partialData = toBasicContext(formDataRef.current)
+        onAutoSaveRef.current(partialData)
+      }
+    }
+  }, [])
 
   // Update a single field
   const updateField = useCallback((field: keyof BasicContextFormData, value: unknown): void => {
@@ -137,6 +174,43 @@ export function BasicContextForm({
       })
     }
   }, [errors])
+
+  // Handle birth date change with validation
+  const handleBirthDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value
+    setTouched((prev) => new Set(prev).add('birthDate'))
+
+    if (!value) {
+      setFormData((prev) => ({ ...prev, birthDate: '' }))
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.birthDate
+        return next
+      })
+      return
+    }
+
+    const date = new Date(value)
+    const today = new Date()
+    const minDate = new Date('1900-01-01')
+
+    if (date > today) {
+      setErrors((prev) => ({ ...prev, birthDate: 'Birth date cannot be in the future' }))
+      return
+    }
+
+    if (date < minDate) {
+      setErrors((prev) => ({ ...prev, birthDate: 'Please enter a valid birth date' }))
+      return
+    }
+
+    setFormData((prev) => ({ ...prev, birthDate: value }))
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.birthDate
+      return next
+    })
+  }, [])
 
   // Update federal employee fields
   const updateFederalField = useCallback((field: keyof FederalEmployeeInfo, value: unknown): void => {
@@ -201,10 +275,11 @@ export function BasicContextForm({
           <DateInput
             label={getQuestionLabel('birthDate', isAdvisorMode)}
             value={formData.birthDate}
-            onChange={(e) => updateField('birthDate', e.target.value)}
+            onChange={handleBirthDateChange}
             error={touched.has('birthDate') ? errors.birthDate : undefined}
             helperText="This helps us calculate retirement eligibility and timelines."
             max={new Date().toISOString().split('T')[0]}
+            showRequired
           />
           <Select
             label={getQuestionLabel('maritalStatus', isAdvisorMode)}
@@ -329,8 +404,12 @@ export function BasicContextForm({
         </div>
       )}
 
-      {/* Hidden submit - form is submitted via parent navigation buttons */}
-      <input type="hidden" id="basicContextSubmit" onClick={handleSubmit} />
+      {/* Submit button */}
+      <div className="pt-6 border-t border-gray-200">
+        <Button type="button" onClick={handleSubmit} className="w-full sm:w-auto">
+          {isAdvisorMode ? 'Save & Continue' : 'Save & Continue'}
+        </Button>
+      </div>
     </div>
   )
 }

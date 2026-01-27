@@ -1,39 +1,31 @@
 /**
  * WelcomeModal Component
  * First-time user onboarding experience
+ *
+ * SEC-27: Hooks extracted to src/hooks/useWelcome.ts to fix React Refresh warnings.
+ * React Fast Refresh requires component files to only export components.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, ModalFooter } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
-
-const WELCOME_SEEN_KEY = 'pathfinder-welcome-seen';
+import { useWelcomeModal } from '@/hooks/useWelcome';
 
 interface WelcomeModalProps {
   onComplete: () => void;
 }
 
-export function WelcomeModal({ onComplete }: WelcomeModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function WelcomeModal({ onComplete }: WelcomeModalProps): JSX.Element {
+  const { isOpen, markAsSeen } = useWelcomeModal();
   const [step, setStep] = useState(0);
 
-  useEffect(() => {
-    // Check if user has seen the welcome modal
-    const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY);
-    if (!hasSeenWelcome) {
-      setIsOpen(true);
-    }
-  }, []);
-
-  const handleComplete = () => {
-    localStorage.setItem(WELCOME_SEEN_KEY, 'true');
-    setIsOpen(false);
+  const handleComplete = (): void => {
+    markAsSeen();
     onComplete();
   };
 
-  const handleSkip = () => {
-    localStorage.setItem(WELCOME_SEEN_KEY, 'true');
-    setIsOpen(false);
+  const handleSkip = (): void => {
+    markAsSeen();
   };
 
   const steps = [
@@ -42,7 +34,7 @@ export function WelcomeModal({ onComplete }: WelcomeModalProps) {
       content: (
         <div className="text-center">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
             </svg>
           </div>
@@ -91,7 +83,7 @@ export function WelcomeModal({ onComplete }: WelcomeModalProps) {
       content: (
         <div className="text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -121,7 +113,7 @@ export function WelcomeModal({ onComplete }: WelcomeModalProps) {
       </div>
 
       {/* Step indicators */}
-      <div className="flex justify-center gap-2 mt-6">
+      <div className="flex justify-center gap-2 mt-6" role="tablist" aria-label="Welcome steps">
         {steps.map((_, index) => (
           <button
             key={index}
@@ -130,6 +122,8 @@ export function WelcomeModal({ onComplete }: WelcomeModalProps) {
               index === step ? 'bg-blue-600' : 'bg-gray-300'
             }`}
             aria-label={`Go to step ${index + 1}`}
+            aria-selected={index === step}
+            role="tab"
           />
         ))}
       </div>
@@ -155,25 +149,4 @@ export function WelcomeModal({ onComplete }: WelcomeModalProps) {
       </ModalFooter>
     </Modal>
   );
-}
-
-/**
- * Hook to check if welcome has been seen
- */
-export function useHasSeenWelcome(): boolean {
-  const [hasSeen, setHasSeen] = useState(true);
-
-  useEffect(() => {
-    const seen = localStorage.getItem(WELCOME_SEEN_KEY);
-    setHasSeen(!!seen);
-  }, []);
-
-  return hasSeen;
-}
-
-/**
- * Function to reset welcome state (for testing)
- */
-export function resetWelcomeState(): void {
-  localStorage.removeItem(WELCOME_SEEN_KEY);
 }

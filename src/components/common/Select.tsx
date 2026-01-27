@@ -13,6 +13,8 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'siz
   size?: 'sm' | 'md' | 'lg'
   options: SelectOption[]
   placeholder?: string
+  /** Shows a red asterisk next to the label */
+  showRequired?: boolean
 }
 
 // Updated sizes to meet WCAG 44px minimum touch target
@@ -33,6 +35,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       placeholder,
       className = '',
       id,
+      showRequired,
       ...props
     },
     ref
@@ -54,6 +57,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className="block text-sm sm:text-base font-medium text-gray-700 mb-1.5"
           >
             {label}
+            {showRequired && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
           </label>
         )}
         <div className="relative">

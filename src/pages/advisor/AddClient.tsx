@@ -31,7 +31,9 @@ export function AddClient(): JSX.Element {
       newErrors.name = 'Client name is required'
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    // RFC 5322 compliant email validation (simplified but comprehensive)
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+    if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
     }
 

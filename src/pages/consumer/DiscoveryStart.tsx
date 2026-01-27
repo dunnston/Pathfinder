@@ -30,7 +30,7 @@ export function DiscoveryStart() {
 
   const handleResumeDiscovery = () => {
     if (discoveryProgress) {
-      const sectionSlug = discoveryProgress.currentSection.replace(/([A-Z])/g, '-$1').toLowerCase();
+      const sectionSlug = discoveryProgress.currentSection.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
       navigate(`/consumer/discovery/${sectionSlug}`);
     }
   };
