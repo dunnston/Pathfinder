@@ -17,18 +17,23 @@ function isSectionComplete(profile: ReturnType<typeof useProfileStore>['currentP
   const data = profile[section]
   if (!data) return false
 
-  // Check if section has meaningful data
+  // Check if section has meaningful data based on actual type fields
   switch (section) {
     case 'basicContext':
-      return Boolean(data && 'birthYear' in data && data.birthYear)
+      return Boolean(data && 'birthDate' in data && data.birthDate)
     case 'retirementVision':
       return Boolean(data && 'targetRetirementAge' in data && data.targetRetirementAge)
     case 'planningPreferences':
-      return Boolean(data && 'planningApproach' in data && data.planningApproach)
+      return Boolean(data && 'complexityTolerance' in data && data.complexityTolerance)
     case 'riskComfort':
-      return Boolean(data && 'riskTolerance' in data && data.riskTolerance)
+      return Boolean(data && 'investmentRiskTolerance' in data && data.investmentRiskTolerance)
     case 'financialSnapshot':
-      return Boolean(data && 'estimatedNetWorth' in data && data.estimatedNetWorth)
+      // FinancialSnapshot uses arrays - check if any have data
+      return Boolean(
+        data &&
+        (('incomeSourcesCurrent' in data && Array.isArray(data.incomeSourcesCurrent) && data.incomeSourcesCurrent.length > 0) ||
+         ('investmentAccounts' in data && Array.isArray(data.investmentAccounts) && data.investmentAccounts.length > 0))
+      )
     default:
       return false
   }
