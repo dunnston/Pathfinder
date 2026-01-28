@@ -187,3 +187,33 @@ export {
   ACTION_GUIDANCE_LABELS,
   ACTION_URGENCY_LABELS,
 } from './strategyProfile';
+
+// Dashboard types
+export type {
+  TaskStatus,
+  TrackedTask,
+  AlertType,
+  AlertFrequency,
+  AlertUrgencyLevel,
+  Alert,
+  AlertRule,
+  AssetClass,
+  IPSHolding,
+  IPSAccount,
+  TargetAllocation,
+  RebalanceRecommendation,
+  InvestmentPolicyStatement,
+  DashboardSettings,
+  DashboardState,
+} from './dashboard';
+
+export {
+  TASK_STATUS_LABELS,
+  ALERT_TYPE_LABELS,
+  ALERT_FREQUENCY_LABELS,
+  ALERT_URGENCY_LABELS,
+  ASSET_CLASS_LABELS,
+  ASSET_CLASS_CATEGORIES,
+  DEFAULT_DASHBOARD_SETTINGS,
+  DEFAULT_REBALANCE_THRESHOLD,
+} from './dashboard';

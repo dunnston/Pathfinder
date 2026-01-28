@@ -17,6 +17,9 @@ export { WizardLayout, WizardStep } from './WizardLayout'
 export { AdvisorLayout, AdvisorPage } from './AdvisorLayout'
 export { AdvisorSidebar } from './AdvisorSidebar'
 
+// Dashboard Layout
+export { DashboardLayout, DashboardPage } from './DashboardLayout'
+
 // Client Components
 export { ClientCard, ClientCardCompact } from './ClientCard'
 export { ClientListView } from './ClientListView'

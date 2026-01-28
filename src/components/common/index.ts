@@ -39,3 +39,6 @@ export { ErrorBoundary, LoadingSpinner, LoadingPage, LoadingOverlay } from './Er
 
 // Session timeout wrapper (SEC-8)
 export { SessionTimeoutWrapper } from './SessionTimeoutWrapper'
+
+// Notification components
+export { NotificationToast } from './NotificationToast'
