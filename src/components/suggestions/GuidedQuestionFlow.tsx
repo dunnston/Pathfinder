@@ -68,7 +68,8 @@ export function GuidedQuestionFlow({
     return calculateDomainProgress(allQuestions, profile, domainState.answers);
   }, [allQuestions, profile, domainState.answers]);
 
-  const isComplete = progress.answered === progress.total && progress.total > 0;
+  const allQuestionsAnswered = progress.answered === progress.total && progress.total > 0;
+  const hasSuggestions = domainState.suggestions.length > 0;
   const isFirstQuestion = currentIndex === 0;
   const isLastQuestion = currentIndex === applicableQuestions.length - 1;
 
@@ -268,7 +269,8 @@ export function GuidedQuestionFlow({
         </Button>
 
         <div className="flex gap-3">
-          {isComplete ? (
+          {hasSuggestions ? (
+            // Suggestions already generated - show view/complete options
             <>
               <Button variant="outline" onClick={handleViewSuggestions}>
                 View Suggestions
@@ -278,7 +280,17 @@ export function GuidedQuestionFlow({
                 Return to Overview
               </Button>
             </>
+          ) : allQuestionsAnswered ? (
+            // All questions answered but no suggestions yet - show generate button
+            <Button
+              onClick={handleGenerateSuggestions}
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              Generate Suggestions
+            </Button>
           ) : isLastQuestion ? (
+            // On last question - show generate button (disabled until answered)
             <Button
               onClick={handleGenerateSuggestions}
               disabled={!currentAnswer}
@@ -288,6 +300,7 @@ export function GuidedQuestionFlow({
               Finish & Generate Suggestions
             </Button>
           ) : (
+            // In middle of questions - show next button
             <Button
               onClick={handleNext}
               disabled={!currentAnswer}
