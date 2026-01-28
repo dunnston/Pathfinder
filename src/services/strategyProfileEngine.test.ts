@@ -46,15 +46,15 @@ const createValuesDiscovery = (overrides: Partial<ValuesDiscovery> = {}): Partia
 const createFinancialGoals = (overrides: Partial<FinancialGoals> = {}): Partial<FinancialGoals> => ({
   state: 'COMPLETED',
   allGoals: [
-    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
-    { id: '2', label: 'Travel in retirement', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'FLEXIBLE' },
+    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
+    { id: '2', label: 'Travel in retirement', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'FLEXIBLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
   ],
   ...overrides,
 });
 
 const createFinancialPurpose = (overrides: Partial<FinancialPurpose> = {}): Partial<FinancialPurpose> => ({
   state: 'COMPLETED',
-  primaryDriver: 'SECURITY',
+  primaryDriver: 'STABILITY_PEACE',
   finalText: 'To provide security for my family',
   tradeoffAnchors: [
     { axis: 'SECURITY_VS_GROWTH', lean: 'A', strength: 2 },
@@ -152,8 +152,8 @@ describe('Strategy Profile Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Retire by 63', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED' },
-            { id: '2', label: 'Buy house', category: 'MAJOR_PURCHASES', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED' },
+            { id: '1', label: 'Retire by 63', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
+            { id: '2', label: 'Buy house', category: 'MAJOR_PURCHASES', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -168,9 +168,9 @@ describe('Strategy Profile Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Retire eventually', category: 'RETIREMENT', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'DEFERRABLE' },
-            { id: '2', label: 'Maybe travel', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE' },
-            { id: '3', label: 'Flexible savings', category: 'SECURITY_PROTECTION', priority: 'LOW', timeHorizon: 'ONGOING', flexibility: 'DEFERRABLE' },
+            { id: '1', label: 'Retire eventually', category: 'RETIREMENT', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
+            { id: '2', label: 'Maybe travel', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
+            { id: '3', label: 'Flexible savings', category: 'SECURITY_PROTECTION', priority: 'LOW', timeHorizon: 'ONGOING', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -187,9 +187,9 @@ describe('Strategy Profile Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Fixed goal', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
-            { id: '2', label: 'Fixed goal 2', category: 'SECURITY_PROTECTION', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
-            { id: '3', label: 'Fixed goal 3', category: 'FAMILY_LEGACY', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
+            { id: '1', label: 'Fixed goal', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
+            { id: '2', label: 'Fixed goal 2', category: 'SECURITY_PROTECTION', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
+            { id: '3', label: 'Fixed goal 3', category: 'FAMILY_LEGACY', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -205,9 +205,9 @@ describe('Strategy Profile Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Flexible goal', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'DEFERRABLE' },
-            { id: '2', label: 'Flexible goal 2', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE' },
-            { id: '3', label: 'Flexible goal 3', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE' },
+            { id: '1', label: 'Flexible goal', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
+            { id: '2', label: 'Flexible goal 2', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
+            { id: '3', label: 'Flexible goal 3', category: 'LIFESTYLE', priority: 'LOW', timeHorizon: 'LONG', flexibility: 'DEFERRABLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -279,6 +279,7 @@ describe('Strategy Profile Engine', () => {
             payGrade: 'GS-13',
             step: 5,
             isLawEnforcement: false,
+            hasMilitaryService: false,
           },
         }),
         valuesDiscovery: createValuesDiscovery({
