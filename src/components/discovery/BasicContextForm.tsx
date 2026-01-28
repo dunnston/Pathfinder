@@ -205,13 +205,30 @@ export function BasicContextForm({
   // Handle birth date change with validation
   // Note: Native date inputs send empty string "" until all parts (month, day, year) are filled.
   // We must NOT update state during partial typing, or re-renders will reset the browser's input.
+  // However, we DO need to allow explicit clearing when the user deletes a previously entered date.
   const handleBirthDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
 
-    // Don't do anything when value is empty - this happens during partial typing.
-    // The browser maintains its own internal state for partially-filled dates.
-    // We only want to update our state when we have a complete, valid date.
+    // Handle explicit clearing: if value is empty AND we previously had a date,
+    // the user is intentionally clearing the field
     if (!value) {
+      setFormData((prev) => {
+        // Only update if there was a previous value (user is clearing)
+        // This avoids resetting during partial typing when birthDate is already empty
+        if (prev.birthDate) {
+          return { ...prev, birthDate: '' }
+        }
+        return prev
+      })
+      // Clear any birthDate errors when user clears the field
+      setErrors((prev) => {
+        if (prev.birthDate) {
+          const next = { ...prev }
+          delete next.birthDate
+          return next
+        }
+        return prev
+      })
       return
     }
 
