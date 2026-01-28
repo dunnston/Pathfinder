@@ -7,6 +7,7 @@ import { useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfileStore } from '@/stores';
 import { Button, LoadingSpinner } from '@/components/common';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DiscoveryInsightsPanel } from '@/components/discovery';
 import {
   generateDiscoveryInsights,
@@ -57,18 +58,20 @@ export function InsightsPage(): JSX.Element {
   // Show loading state while hydrating from localStorage
   if (!_hasHydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading your insights...</p>
+      <DashboardLayout>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-gray-600">Loading your insights...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!currentProfile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <DashboardLayout>
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900">No Profile Found</h1>
           <p className="mt-4 text-gray-600">
@@ -81,12 +84,12 @@ export function InsightsPage(): JSX.Element {
             Start Discovery
           </Link>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <DashboardLayout>
       {/* Print styles */}
       <style>{`
         @media print {
@@ -223,7 +226,7 @@ export function InsightsPage(): JSX.Element {
           </p>
         </footer>
       </main>
-    </div>
+    </DashboardLayout>
   );
 }
 
