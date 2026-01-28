@@ -3,8 +3,10 @@
  * Provides navigation between dashboard sections
  */
 
+import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useDashboardStore } from '@/stores';
+import { useDashboardStore, useSuggestionsStore } from '@/stores';
+import { SUGGESTION_DOMAINS } from '@/types/suggestions';
 
 interface DashboardNavProps {
   className?: string;
@@ -27,6 +29,28 @@ export function DashboardNav({ className = '', onClose }: DashboardNavProps): JS
     (t) => t.status === 'not_started' || t.status === 'in_progress'
   ).length;
   const activeAlerts = alerts.filter((a) => !a.completedAt && !a.acknowledgedAt).length;
+
+  // Get suggestions stats for badge - select raw data to avoid new array on each render
+  const planItems = useSuggestionsStore((state) => state.planItems);
+  const domainStates = useSuggestionsStore((state) => state.domainStates);
+
+  // Compute accepted suggestions count in useMemo to avoid recalculating on every render
+  const suggestionsNotInPlan = useMemo(() => {
+    const planSourceIds = new Set(
+      planItems.filter((p) => p.type === 'suggestion').map((p) => p.sourceId)
+    );
+
+    let count = 0;
+    for (const domain of SUGGESTION_DOMAINS) {
+      const domainSuggestions = domainStates[domain]?.suggestions || [];
+      for (const s of domainSuggestions) {
+        if ((s.status === 'accepted' || s.status === 'modified') && !planSourceIds.has(s.id)) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }, [planItems, domainStates]);
 
   const navItems: NavItem[] = [
     {
@@ -100,6 +124,21 @@ export function DashboardNav({ className = '', onClose }: DashboardNavProps): JS
         </svg>
       ),
       badge: pendingTasks > 0 ? pendingTasks : undefined,
+    },
+    {
+      label: 'Guided Suggestions',
+      href: '/consumer/dashboard/suggestions',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+          />
+        </svg>
+      ),
+      badge: suggestionsNotInPlan > 0 ? suggestionsNotInPlan : undefined,
     },
     {
       label: 'Investment Policy',

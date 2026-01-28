@@ -217,3 +217,44 @@ export {
   DEFAULT_DASHBOARD_SETTINGS,
   DEFAULT_REBALANCE_THRESHOLD,
 } from './dashboard';
+
+// Suggestions Engine types
+export type {
+  SuggestionDomain,
+  ConditionType,
+  ApplicabilityCondition,
+  DomainInfo,
+  QuestionInputType,
+  QuestionOption,
+  ScaleConfig,
+  GuidedQuestion,
+  QuestionAnswer,
+  SuggestionPriority,
+  SuggestionActionType,
+  SuggestionStatus,
+  Suggestion,
+  RecommendationCreator,
+  CustomRecommendation,
+  PlanItemType,
+  PlanItemStatus,
+  PlanItem,
+  DomainExplorationStatus,
+  DomainExplorationState,
+  SuggestionsState,
+  SuggestionTrigger,
+  SuggestionTemplate,
+} from './suggestions';
+
+export {
+  SUGGESTION_DOMAIN_LABELS,
+  SUGGESTION_DOMAIN_ICONS,
+  SUGGESTION_DOMAIN_DESCRIPTIONS,
+  SUGGESTION_PRIORITY_LABELS,
+  SUGGESTION_ACTION_TYPE_LABELS,
+  SUGGESTION_STATUS_LABELS,
+  DOMAIN_EXPLORATION_STATUS_LABELS,
+  PLAN_ITEM_STATUS_LABELS,
+  SUGGESTION_DOMAINS,
+  createDefaultDomainState,
+  createDefaultSuggestionsState,
+} from './suggestions';

@@ -24,6 +24,11 @@ const RebalancePage = lazy(() => import('./pages/consumer/dashboard/RebalancePag
 const SettingsPage = lazy(() => import('./pages/consumer/dashboard/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const IPSAllocationsPage = lazy(() => import('./pages/consumer/dashboard/IPSAllocationsPage').then(m => ({ default: m.IPSAllocationsPage })))
 
+// Suggestions Engine pages - lazy loaded (SEC-9: code splitting)
+const SuggestionsOverviewPage = lazy(() => import('./pages/consumer/dashboard/SuggestionsOverviewPage').then(m => ({ default: m.SuggestionsOverviewPage })))
+const DomainExplorationPage = lazy(() => import('./pages/consumer/dashboard/DomainExplorationPage').then(m => ({ default: m.DomainExplorationPage })))
+const PlanBuilderPage = lazy(() => import('./pages/consumer/dashboard/PlanBuilderPage').then(m => ({ default: m.PlanBuilderPage })))
+
 // Advisor pages - lazy loaded (SEC-9: code splitting)
 const AdvisorDashboard = lazy(() => import('./pages/advisor/AdvisorDashboard').then(m => ({ default: m.AdvisorDashboard })))
 const ClientList = lazy(() => import('./pages/advisor/ClientList').then(m => ({ default: m.ClientList })))
@@ -97,6 +102,17 @@ function App() {
           } />
           <Route path="/consumer/dashboard/settings" element={
             <RouteErrorBoundary><SettingsPage /></RouteErrorBoundary>
+          } />
+
+          {/* Suggestions Engine Routes - wrapped with error boundary */}
+          <Route path="/consumer/dashboard/suggestions" element={
+            <RouteErrorBoundary><SuggestionsOverviewPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/suggestions/:domain" element={
+            <RouteErrorBoundary><DomainExplorationPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/plan" element={
+            <RouteErrorBoundary><PlanBuilderPage /></RouteErrorBoundary>
           } />
 
           {/* Advisor Routes - wrapped with error boundary */}
