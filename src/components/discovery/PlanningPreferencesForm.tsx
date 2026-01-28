@@ -283,6 +283,18 @@ export function PlanningPreferencesForm({
         </div>
       </div>
 
+      {/* Form-level errors (for any validation errors not shown by individual fields) */}
+      {Object.keys(errors).length > 0 && touched.size > 0 && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm font-medium text-red-800">Please correct the following errors:</p>
+          <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
+            {Object.entries(errors).map(([field, message]) => (
+              <li key={field}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Submit button */}
       <div className="pt-6 border-t border-gray-200">
         <Button type="submit" className="w-full sm:w-auto">

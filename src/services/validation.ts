@@ -383,8 +383,8 @@ export const planningPreferencesSchema = z.object({
   advisorInvolvementDesire: involvementLevelSchema,
   decisionMakingStyle: decisionStyleSchema,
   educationPreference: educationPreferenceSchema,
-  valuesPriorities: z.array(valueRankingSchema)
-    .min(1, 'Please rank at least one value'),
+  // valuesPriorities is optional - may be populated from ValuesDiscovery section
+  valuesPriorities: z.array(valueRankingSchema).default([]),
   tradeoffPreferences: z.array(tradeoffPreferenceSchema)
     .min(1, 'Please complete at least one tradeoff'),
 })

@@ -473,6 +473,7 @@ function calculateGuidanceLevel(
 
 /**
  * Generate human-readable summary paragraph
+ * Produces natural, flowing prose that reads professionally
  */
 function generateSummary(
   incomeStrategy: StrategyDimension<IncomeStrategyOrientation>,
@@ -481,74 +482,96 @@ function generateSummary(
   complexityTolerance: StrategyDimension<ComplexityTolerance>,
   guidanceLevel: StrategyDimension<GuidanceLevel>
 ): string {
-  const parts: string[] = [];
+  // Build first sentence: income strategy + timing sensitivity
+  let firstSentence = '';
 
-  // Income strategy
   switch (incomeStrategy.value) {
     case 'STABILITY_FOCUSED':
-      parts.push('Planning should prioritize income stability over growth');
+      firstSentence = 'Planning should prioritize income stability over growth';
       break;
     case 'GROWTH_FOCUSED':
-      parts.push('Planning can emphasize growth and optionality');
+      firstSentence = 'Planning can emphasize growth and optionality';
       break;
     case 'BALANCED':
-      parts.push('Planning should balance income stability with growth opportunities');
+      firstSentence = 'Planning should balance income stability with growth opportunities';
       break;
   }
 
-  // Timing sensitivity
+  // Add timing sensitivity to first sentence
   switch (timingSensitivity.value) {
     case 'HIGH':
-      parts.push('with high sensitivity to timing and market conditions');
+      firstSentence += ', with high sensitivity to timing and market conditions';
       break;
     case 'MEDIUM':
-      parts.push('with moderate sensitivity to timing');
+      firstSentence += ', with moderate sensitivity to timing';
       break;
     case 'LOW':
-      parts.push('with flexibility around timing');
+      firstSentence += ', with flexibility around timing';
       break;
   }
 
-  // Planning flexibility
-  switch (planningFlexibility.value) {
-    case 'HIGH':
-      parts.push('The plan can be highly adaptable to changing conditions.');
-      break;
-    case 'MODERATE':
-      parts.push('The plan should maintain some structure while allowing adjustments.');
-      break;
-    case 'LOW':
-      parts.push('and limited flexibility for major changes.');
-      break;
+  // Add flexibility to first sentence when LOW (flows naturally)
+  if (planningFlexibility.value === 'LOW') {
+    firstSentence += ' and limited flexibility for major income disruptions';
   }
 
-  // Complexity tolerance
-  switch (complexityTolerance.value) {
-    case 'SIMPLE':
-      parts.push('Simple, predictable strategies are preferred.');
-      break;
-    case 'MODERATE':
-      parts.push('Moderate complexity in strategies is acceptable.');
-      break;
-    case 'ADVANCED':
-      parts.push('Advanced strategies can be considered.');
-      break;
+  firstSentence += '.';
+
+  // Build second sentence: flexibility (if not LOW) + complexity
+  let secondSentence = '';
+
+  if (planningFlexibility.value === 'HIGH') {
+    secondSentence = 'The plan can be highly adaptable to changing conditions';
+  } else if (planningFlexibility.value === 'MODERATE') {
+    secondSentence = 'The plan should maintain structure while allowing for adjustments';
   }
 
-  // Guidance level
+  // Add complexity preference
+  if (secondSentence) {
+    switch (complexityTolerance.value) {
+      case 'SIMPLE':
+        secondSentence += ', with preference for simple, predictable strategies.';
+        break;
+      case 'MODERATE':
+        secondSentence += ', and moderate complexity is acceptable.';
+        break;
+      case 'ADVANCED':
+        secondSentence += ', and advanced strategies can be considered.';
+        break;
+    }
+  } else {
+    // No flexibility sentence, start fresh with complexity
+    switch (complexityTolerance.value) {
+      case 'SIMPLE':
+        secondSentence = 'Simple, predictable strategies are preferred.';
+        break;
+      case 'MODERATE':
+        secondSentence = 'Moderate complexity in planning strategies is acceptable.';
+        break;
+      case 'ADVANCED':
+        secondSentence = 'Advanced planning strategies can be considered.';
+        break;
+    }
+  }
+
+  // Build third sentence: guidance needs
+  let thirdSentence = '';
+
   switch (guidanceLevel.value) {
     case 'HIGH':
-      parts.push('Clear structure and ongoing guidance will be beneficial.');
+      thirdSentence = 'Clear structure and ongoing guidance will be beneficial.';
       break;
     case 'MODERATE':
-      parts.push('Some guidance on key decisions will be helpful.');
+      thirdSentence = 'Periodic guidance on key decisions will be helpful.';
       break;
     case 'LOW':
-      parts.push('Self-directed decision-making is comfortable.');
+      thirdSentence = 'Self-directed decision-making with minimal oversight is comfortable.';
       break;
   }
 
-  return parts.join(', ').replace(/, The/g, '. The').replace(/, Simple/g, '. Simple');
+  // Combine sentences, filtering empty ones
+  const sentences = [firstSentence, secondSentence, thirdSentence].filter(Boolean);
+  return sentences.join(' ');
 }
 
 // ============================================================

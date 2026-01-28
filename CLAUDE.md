@@ -2,9 +2,10 @@
 
 ## Project Overview
 
-**Project:** Pathfinder - Financial Decision Platform  
-**Tech Stack:** React 18 + TypeScript + Tailwind CSS + Vite  
+**Project:** Pathfinder - Financial Decision Platform
+**Tech Stack:** React 18 + TypeScript + Tailwind CSS + Vite
 **Reference:** See `DESIGN_DOCUMENT.md` for complete product specification
+**Security:** See `SECURITY.md` for security guidelines and `SECURITY_ACTION_PLAN.md` for known issues
 
 ---
 
@@ -29,6 +30,9 @@
 6. **Always reference the DESIGN_DOCUMENT.md** - Ensure work aligns with specifications.
 7. **Always check MVP_TRACKER.md first** - Review current phase and task status before starting work.
 8. **Always update MVP_TRACKER.md** - Mark tasks complete and log session progress when ending work.
+9. **Always follow SECURITY.md guidelines** - This app handles sensitive financial data; security is mandatory.
+10. **Always validate user input** - Use Zod schemas with max lengths and sanitize before storing.
+11. **Always sanitize objects before spreading** - Prevent prototype pollution attacks.
 
 ---
 
@@ -156,6 +160,8 @@ Brief description of what this PR accomplishes
 ├── DESIGN_DOCUMENT.md       # Product specification
 ├── CLAUDE.md                # This file
 ├── MVP_TRACKER.md           # MVP implementation progress tracker
+├── SECURITY.md              # Security development guidelines
+├── SECURITY_ACTION_PLAN.md  # Security audit findings and remediation plan
 └── README.md                # Project readme
 ```
 
@@ -360,6 +366,22 @@ Before marking any work as complete:
 - [ ] Form validation works correctly
 - [ ] Data persists correctly (if applicable)
 - [ ] Matches design document specifications
+- [ ] Security checklist passes (see below)
+
+## Security Checklist
+
+Before merging any code that handles user data:
+
+- [ ] All string inputs have maximum length constraints
+- [ ] All numeric inputs have min/max ranges
+- [ ] No `dangerouslySetInnerHTML` with user data
+- [ ] No `eval()` or `new Function()` with user input
+- [ ] Object spreads use sanitized data (no prototype pollution)
+- [ ] Sensitive data is not logged to console
+- [ ] Error messages don't expose internal details
+- [ ] No hardcoded secrets or credentials
+- [ ] Dependencies have been audited (`npm audit`)
+- [ ] See `SECURITY.md` for complete guidelines
 
 ---
 

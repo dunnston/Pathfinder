@@ -54,6 +54,18 @@ const defaultFormData: BasicContextFormData = {
 }
 
 /**
+ * Safely convert a Date to ISO date string (YYYY-MM-DD)
+ * Returns empty string if the date is invalid
+ */
+function toISODateString(date: Date | string | undefined): string {
+  if (!date) return ''
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  // Check if the date is valid before converting
+  if (isNaN(dateObj.getTime())) return ''
+  return dateObj.toISOString().split('T')[0]
+}
+
+/**
  * Convert stored BasicContext to form data
  */
 function toFormData(data?: Partial<BasicContext>): BasicContextFormData {
@@ -62,7 +74,7 @@ function toFormData(data?: Partial<BasicContext>): BasicContextFormData {
   return {
     firstName: data.firstName || '',
     lastName: data.lastName || '',
-    birthDate: data.birthDate ? new Date(data.birthDate).toISOString().split('T')[0] : '',
+    birthDate: toISODateString(data.birthDate),
     maritalStatus: data.maritalStatus || '',
     occupation: data.occupation || '',
     isFederalEmployee: data.federalEmployee !== null && data.federalEmployee !== undefined,
@@ -75,6 +87,15 @@ function toFormData(data?: Partial<BasicContext>): BasicContextFormData {
 }
 
 /**
+ * Check if a date string is valid and complete (YYYY-MM-DD format)
+ */
+function isValidDateString(dateStr: string): boolean {
+  if (!dateStr || dateStr.length !== 10) return false
+  const date = new Date(dateStr)
+  return !isNaN(date.getTime())
+}
+
+/**
  * Convert form data to BasicContext for storage
  */
 function toBasicContext(formData: BasicContextFormData): BasicContext {
@@ -84,10 +105,16 @@ function toBasicContext(formData: BasicContextFormData): BasicContext {
     .map((h) => h.trim())
     .filter(Boolean)
 
+  // Only convert to Date if the string is valid and complete
+  // This prevents Invalid Date objects during partial typing
+  const birthDate = isValidDateString(formData.birthDate)
+    ? new Date(formData.birthDate)
+    : undefined
+
   return {
     firstName: formData.firstName,
     lastName: formData.lastName,
-    birthDate: new Date(formData.birthDate),
+    birthDate: birthDate as Date, // Type assertion - validation handles undefined
     maritalStatus: formData.maritalStatus as BasicContext['maritalStatus'],
     occupation: formData.occupation,
     federalEmployee: formData.isFederalEmployee
@@ -176,19 +203,37 @@ export function BasicContextForm({
   }, [errors])
 
   // Handle birth date change with validation
+  // Note: Native date inputs send empty string "" until all parts (month, day, year) are filled.
+  // We must NOT update state during partial typing, or re-renders will reset the browser's input.
+  // However, we DO need to allow explicit clearing when the user deletes a previously entered date.
   const handleBirthDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
-    setTouched((prev) => new Set(prev).add('birthDate'))
 
+    // Handle explicit clearing: if value is empty AND we previously had a date,
+    // the user is intentionally clearing the field
     if (!value) {
-      setFormData((prev) => ({ ...prev, birthDate: '' }))
+      setFormData((prev) => {
+        // Only update if there was a previous value (user is clearing)
+        // This avoids resetting during partial typing when birthDate is already empty
+        if (prev.birthDate) {
+          return { ...prev, birthDate: '' }
+        }
+        return prev
+      })
+      // Clear any birthDate errors when user clears the field
       setErrors((prev) => {
-        const next = { ...prev }
-        delete next.birthDate
-        return next
+        if (prev.birthDate) {
+          const next = { ...prev }
+          delete next.birthDate
+          return next
+        }
+        return prev
       })
       return
     }
+
+    // Mark as touched only when we have a value
+    setTouched((prev) => new Set(prev).add('birthDate'))
 
     const date = new Date(value)
     const today = new Date()

@@ -27,6 +27,18 @@ interface RetirementVisionFormProps {
   birthDate?: Date | string
 }
 
+/**
+ * Safely extract birth year from a Date or string
+ * Returns null if the date is invalid or undefined
+ */
+function getBirthYear(birthDate: Date | string | undefined): number | null {
+  if (!birthDate) return null
+  const dateObj = typeof birthDate === 'string' ? new Date(birthDate) : birthDate
+  // Check if the date is valid before accessing getFullYear
+  if (isNaN(dateObj.getTime())) return null
+  return dateObj.getFullYear()
+}
+
 export function RetirementVisionForm({
   initialData,
   onSave,
@@ -34,10 +46,8 @@ export function RetirementVisionForm({
   isAdvisorMode = false,
   birthDate,
 }: RetirementVisionFormProps): JSX.Element {
-  // Calculate birth year from birthDate prop
-  const birthYear = birthDate
-    ? new Date(birthDate).getFullYear()
-    : null
+  // Calculate birth year from birthDate prop (safely handles invalid dates)
+  const birthYear = getBirthYear(birthDate)
   // Form state
   const [formData, setFormData] = useState<Partial<RetirementVision>>(() => ({
     targetRetirementAge: undefined,
