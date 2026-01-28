@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfileStore } from '@/stores/profileStore'
+import { useDashboardStore } from '@/stores/dashboardStore'
 import { Button, Modal, ModalFooter } from '@/components/common'
 import { WelcomeModal } from '@/components/layout'
 import type { ProfileSection, PartialFinancialProfile } from '@/types'
@@ -61,7 +62,13 @@ function isSectionComplete(profile: PartialFinancialProfile | null, section: Pro
 export function ConsumerHome() {
   const navigate = useNavigate()
   const { currentProfile, clearProfile } = useProfileStore()
+  const { alerts } = useDashboardStore()
   const [showClearModal, setShowClearModal] = useState(false)
+
+  // Count active (non-acknowledged) alerts
+  const activeAlertCount = useMemo(() => {
+    return alerts.filter(a => !a.acknowledgedAt && !a.completedAt).length
+  }, [alerts])
 
   // Calculate progress with useMemo for proper dependency tracking (UX-14)
   const { completedSections, progressPercent, hasProgress } = useMemo(() => {
@@ -194,6 +201,41 @@ export function ConsumerHome() {
               >
                 View Full Profile Summary →
               </button>
+            </div>
+          )}
+
+          {/* Dashboard Card - shown when profile has progress */}
+          {hasProgress && (
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Your Financial Dashboard</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Track recommendations, manage your investment policy, and monitor your progress.
+                    </p>
+                    {activeAlertCount > 0 && (
+                      <p className="text-sm text-yellow-700 mt-2 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        {activeAlertCount} alert{activeAlertCount !== 1 ? 's' : ''} need{activeAlertCount === 1 ? 's' : ''} attention
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => navigate('/consumer/dashboard')}
+                  variant="primary"
+                >
+                  Open Dashboard
+                </Button>
+              </div>
             </div>
           )}
         </div>

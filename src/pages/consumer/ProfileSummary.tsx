@@ -27,11 +27,6 @@ import {
   getPlanningStageLabel,
 } from '@/services/classification';
 import {
-  generateDiscoveryInsights,
-  getInsightsStatusMessage,
-} from '@/services/discoveryInsightsEngine';
-import { DiscoveryInsightsPanel } from '@/components/discovery';
-import {
   MARITAL_STATUS_LABELS,
   FLEXIBILITY_LABELS,
   CONCERN_LABELS,
@@ -75,27 +70,6 @@ export function ProfileSummary() {
   const classifications = useMemo(() => {
     if (!currentProfile) return null;
     return generateSystemClassifications(currentProfile);
-  }, [currentProfile]);
-
-  // Generate discovery insights
-  const discoveryInsights = useMemo(() => {
-    if (!currentProfile) return null;
-    return generateDiscoveryInsights({
-      basicContext: currentProfile.basicContext,
-      valuesDiscovery: currentProfile.valuesDiscovery,
-      financialGoals: currentProfile.financialGoals,
-      financialPurpose: currentProfile.financialPurpose,
-    });
-  }, [currentProfile]);
-
-  const insightsStatusMessage = useMemo(() => {
-    if (!currentProfile) return '';
-    return getInsightsStatusMessage({
-      basicContext: currentProfile.basicContext,
-      valuesDiscovery: currentProfile.valuesDiscovery,
-      financialGoals: currentProfile.financialGoals,
-      financialPurpose: currentProfile.financialPurpose,
-    });
   }, [currentProfile]);
 
   // Check if profile has minimum required data
@@ -163,12 +137,20 @@ export function ProfileSummary() {
           <p className="mt-4 text-gray-600">
             You haven't started your discovery process yet.
           </p>
-          <Link
-            to="/consumer/discovery"
-            className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
-          >
-            Start Discovery
-          </Link>
+          <div className="mt-6 flex justify-center gap-4">
+            <Link
+              to="/consumer/dashboard"
+              className="inline-block rounded-lg bg-gray-200 px-6 py-3 font-medium text-gray-700 hover:bg-gray-300"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/consumer/discovery"
+              className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            >
+              Start Discovery
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -183,12 +165,20 @@ export function ProfileSummary() {
           <p className="mt-4 text-gray-600">
             Please complete at least the Basic Context section to view your profile summary.
           </p>
-          <Link
-            to="/consumer/discovery/basic-context"
-            className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
-          >
-            Continue Discovery
-          </Link>
+          <div className="mt-6 flex justify-center gap-4">
+            <Link
+              to="/consumer/dashboard"
+              className="inline-block rounded-lg bg-gray-200 px-6 py-3 font-medium text-gray-700 hover:bg-gray-300"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/consumer/discovery/basic-context"
+              className="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            >
+              Continue Discovery
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -214,6 +204,9 @@ export function ProfileSummary() {
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/consumer/dashboard">
+                <Button variant="secondary" fullWidth className="sm:w-auto">Dashboard</Button>
+              </Link>
               <Link to="/consumer/discovery/basic-context">
                 <Button variant="secondary" fullWidth className="sm:w-auto">Edit Profile</Button>
               </Link>
@@ -777,21 +770,6 @@ export function ProfileSummary() {
           {classifications && (
             <DecisionWindowsList windows={classifications.upcomingDecisionWindows} />
           )}
-
-          {/* Discovery Insights */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Planning Insights
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">{insightsStatusMessage}</p>
-            {discoveryInsights ? (
-              <DiscoveryInsightsPanel insights={discoveryInsights} />
-            ) : (
-              <p className="text-gray-500 italic">
-                Complete more discovery sections to generate planning insights.
-              </p>
-            )}
-          </Card>
 
           {/* Advisor Notes (if any) */}
           {currentProfile.advisorNotes && (

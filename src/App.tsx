@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ErrorBoundary, LoadingPage } from './components/common/ErrorBoundary'
 import { SessionTimeoutWrapper } from './components/common/SessionTimeoutWrapper'
+import { NotificationToast } from './components/common/NotificationToast'
 
 // Landing - eagerly loaded for fast initial render
 import { LandingPage } from './pages/LandingPage'
@@ -12,6 +13,16 @@ const DiscoveryStart = lazy(() => import('./pages/consumer/DiscoveryStart').then
 const DiscoverySection = lazy(() => import('./pages/consumer/DiscoverySection').then(m => ({ default: m.DiscoverySection })))
 const ProfileSummary = lazy(() => import('./pages/consumer/ProfileSummary').then(m => ({ default: m.ProfileSummary })))
 const InsightsPage = lazy(() => import('./pages/consumer/InsightsPage').then(m => ({ default: m.InsightsPage })))
+
+// Dashboard pages - lazy loaded (SEC-9: code splitting)
+const DashboardOverview = lazy(() => import('./pages/consumer/dashboard/DashboardOverview').then(m => ({ default: m.DashboardOverview })))
+const RecommendationsPage = lazy(() => import('./pages/consumer/dashboard/RecommendationsPage').then(m => ({ default: m.RecommendationsPage })))
+const FocusAreasPage = lazy(() => import('./pages/consumer/dashboard/FocusAreasPage').then(m => ({ default: m.FocusAreasPage })))
+const IPSPage = lazy(() => import('./pages/consumer/dashboard/IPSPage').then(m => ({ default: m.IPSPage })))
+const IPSAccountsPage = lazy(() => import('./pages/consumer/dashboard/IPSAccountsPage').then(m => ({ default: m.IPSAccountsPage })))
+const RebalancePage = lazy(() => import('./pages/consumer/dashboard/RebalancePage').then(m => ({ default: m.RebalancePage })))
+const SettingsPage = lazy(() => import('./pages/consumer/dashboard/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const IPSAllocationsPage = lazy(() => import('./pages/consumer/dashboard/IPSAllocationsPage').then(m => ({ default: m.IPSAllocationsPage })))
 
 // Advisor pages - lazy loaded (SEC-9: code splitting)
 const AdvisorDashboard = lazy(() => import('./pages/advisor/AdvisorDashboard').then(m => ({ default: m.AdvisorDashboard })))
@@ -62,6 +73,32 @@ function App() {
             <RouteErrorBoundary><InsightsPage /></RouteErrorBoundary>
           } />
 
+          {/* Dashboard Routes - wrapped with error boundary */}
+          <Route path="/consumer/dashboard" element={
+            <RouteErrorBoundary><DashboardOverview /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/recommendations" element={
+            <RouteErrorBoundary><RecommendationsPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/focus-areas" element={
+            <RouteErrorBoundary><FocusAreasPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/ips" element={
+            <RouteErrorBoundary><IPSPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/ips/accounts" element={
+            <RouteErrorBoundary><IPSAccountsPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/ips/allocations" element={
+            <RouteErrorBoundary><IPSAllocationsPage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/ips/rebalance" element={
+            <RouteErrorBoundary><RebalancePage /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/dashboard/settings" element={
+            <RouteErrorBoundary><SettingsPage /></RouteErrorBoundary>
+          } />
+
           {/* Advisor Routes - wrapped with error boundary */}
           <Route path="/advisor" element={
             <RouteErrorBoundary><AdvisorDashboard /></RouteErrorBoundary>
@@ -88,6 +125,8 @@ function App() {
           } />
         </Routes>
         </SessionTimeoutWrapper>
+        {/* Global toast notifications */}
+        <NotificationToast />
       </ErrorBoundary>
     </BrowserRouter>
   )
