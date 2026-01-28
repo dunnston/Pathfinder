@@ -31,10 +31,10 @@ interface TaskListProps {
 }
 
 const URGENCY_ORDER: Record<ActionUrgency, number> = {
-  critical: 0,
-  high: 1,
-  moderate: 2,
-  low: 3,
+  IMMEDIATE: 0,
+  NEAR_TERM: 1,
+  MEDIUM_TERM: 2,
+  ONGOING: 3,
 };
 
 const STATUS_ORDER: Record<TaskStatus, number> = {
@@ -194,15 +194,15 @@ export function TaskListHeader({
           className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
         >
           <option value="all">All Domains</option>
-          <option value="retirement">Retirement</option>
-          <option value="tax">Tax Planning</option>
-          <option value="estate">Estate Planning</option>
-          <option value="risk">Risk Management</option>
-          <option value="investment">Investments</option>
-          <option value="education">Education</option>
-          <option value="cashflow">Cash Flow</option>
-          <option value="debt">Debt Management</option>
-          <option value="other">Other</option>
+          <option value="RETIREMENT_INCOME">Retirement Income</option>
+          <option value="INVESTMENT_STRATEGY">Investment Strategy</option>
+          <option value="TAX_OPTIMIZATION">Tax Optimization</option>
+          <option value="INSURANCE_RISK">Insurance & Risk</option>
+          <option value="ESTATE_LEGACY">Estate & Legacy</option>
+          <option value="CASH_FLOW_DEBT">Cash Flow & Debt</option>
+          <option value="BENEFITS_OPTIMIZATION">Benefits</option>
+          <option value="BUSINESS_CAREER">Business & Career</option>
+          <option value="HEALTHCARE_LTC">Healthcare & LTC</option>
         </select>
 
         {/* Urgency Filter */}
@@ -212,10 +212,10 @@ export function TaskListHeader({
           className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
         >
           <option value="all">All Urgencies</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="moderate">Moderate</option>
-          <option value="low">Low</option>
+          <option value="IMMEDIATE">Immediate</option>
+          <option value="NEAR_TERM">Near Term</option>
+          <option value="MEDIUM_TERM">Medium Term</option>
+          <option value="ONGOING">Ongoing</option>
         </select>
 
         {/* Sort By */}

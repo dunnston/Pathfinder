@@ -680,11 +680,25 @@ export const useDashboardStore = create<DashboardStore>()(
       updateSettings: (settingsUpdate) =>
         set((state) => {
           const sanitized = sanitizeObject(settingsUpdate);
+          const newSettings = {
+            ...state.settings,
+            ...sanitized,
+          };
+
+          // Sync settings frequencies to alert rules
+          const updatedRules = state.alertRules.map((rule) => {
+            if (rule.type === 'rebalance_due' && sanitized.rebalanceFrequency) {
+              return { ...rule, frequency: sanitized.rebalanceFrequency };
+            }
+            if (rule.type === 'beneficiary_review' && sanitized.beneficiaryReviewFrequency) {
+              return { ...rule, frequency: sanitized.beneficiaryReviewFrequency };
+            }
+            return rule;
+          });
+
           return {
-            settings: {
-              ...state.settings,
-              ...sanitized,
-            },
+            settings: newSettings,
+            alertRules: updatedRules,
           };
         }),
 
