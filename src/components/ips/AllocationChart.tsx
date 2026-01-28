@@ -214,7 +214,7 @@ export function AllocationChart({
                 paddingAngle={2}
                 dataKey="percentage"
                 nameKey="name"
-                label={({ percentage }) => `${percentage.toFixed(0)}%`}
+                label={({ percent }) => `${((percent ?? 0) * 100).toFixed(0)}%`}
                 labelLine={false}
               >
                 {pieChartData.map((entry) => (
