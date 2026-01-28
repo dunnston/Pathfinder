@@ -34,10 +34,10 @@ export function DashboardLayout({
         />
       )}
 
-      {/* Mobile menu button */}
+      {/* Mobile menu button - hidden when printing */}
       <button
         type="button"
-        className="fixed top-4 left-4 z-50 md:hidden p-3 rounded-lg bg-white shadow-lg border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+        className="fixed top-4 left-4 z-50 md:hidden p-3 rounded-lg bg-white shadow-lg border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary print:hidden"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isMobileMenuOpen}
@@ -54,15 +54,15 @@ export function DashboardLayout({
         )}
       </button>
 
-      {/* Desktop sidebar - always visible on md+ */}
-      <div className="hidden md:block">
+      {/* Desktop sidebar - always visible on md+, hidden when printing */}
+      <div className="hidden md:block print:hidden">
         <DashboardNav className="fixed inset-y-0 left-0 z-30" />
       </div>
 
-      {/* Mobile sidebar - hidden from focus/screen readers when closed */}
+      {/* Mobile sidebar - hidden from focus/screen readers when closed, hidden when printing */}
       <div
         id="mobile-dashboard-sidebar"
-        className={`md:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`md:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out print:hidden ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-hidden={!isMobileMenuOpen}
@@ -72,8 +72,8 @@ export function DashboardLayout({
         <DashboardNav onClose={() => setIsMobileMenuOpen(false)} />
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 md:ml-64 flex flex-col">
+      {/* Main content area - full width when printing */}
+      <div className="flex-1 md:ml-64 print:ml-0 flex flex-col">
         {/* Header */}
         {(title || headerActions) && (
           <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">

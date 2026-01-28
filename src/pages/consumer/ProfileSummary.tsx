@@ -7,6 +7,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfileStore } from '@/stores';
 import { Button, Card, LoadingSpinner, Modal, ModalFooter } from '@/components/common';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 // Toast notification for export status
 interface ToastState {
@@ -120,18 +121,20 @@ export function ProfileSummary() {
   // Show loading state while hydrating from localStorage
   if (!_hasHydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading your profile...</p>
+      <DashboardLayout>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-gray-600">Loading your profile...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!currentProfile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <DashboardLayout>
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900">No Profile Found</h1>
           <p className="mt-4 text-gray-600">
@@ -152,14 +155,14 @@ export function ProfileSummary() {
             </Link>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   // Show incomplete profile state
   if (!hasMinimalData) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <DashboardLayout>
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Profile Incomplete</h1>
           <p className="mt-4 text-gray-600">
@@ -180,16 +183,16 @@ export function ProfileSummary() {
             </Link>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   const { basicContext, retirementVision, valuesDiscovery, financialGoals, financialPurpose, planningPreferences, riskComfort, financialSnapshot } = currentProfile;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <DashboardLayout>
       {/* SEC-26: Main landmark for accessibility */}
-      <main className="mx-auto max-w-4xl px-4 py-8" role="main" aria-labelledby="profile-title">
+      <div className="mx-auto max-w-4xl px-4 py-8" role="main" aria-labelledby="profile-title">
         {/* Header */}
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -779,7 +782,7 @@ export function ProfileSummary() {
             </Card>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Toast Notification */}
       {toast.show && (
@@ -864,6 +867,6 @@ export function ProfileSummary() {
           </Button>
         </ModalFooter>
       </Modal>
-    </div>
+    </DashboardLayout>
   );
 }
