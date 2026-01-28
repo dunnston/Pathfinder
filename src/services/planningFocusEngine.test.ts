@@ -42,7 +42,7 @@ const createValuesDiscovery = (overrides: Partial<ValuesDiscovery> = {}): Partia
 const createFinancialGoals = (overrides: Partial<FinancialGoals> = {}): Partial<FinancialGoals> => ({
   state: 'COMPLETED',
   allGoals: [
-    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
+    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
   ],
   ...overrides,
 });
@@ -110,7 +110,7 @@ describe('Planning Focus Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Retire soon', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED' },
+            { id: '1', label: 'Retire soon', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -124,7 +124,7 @@ describe('Planning Focus Engine', () => {
       const ranking = generateFocusAreaRanking({
         basicContext: createBasicContext({
           dependents: [
-            { name: 'Child', relationship: 'child', age: 10, financiallyDependent: true },
+            { relationship: 'child', birthDate: new Date('2016-01-01'), financiallyDependent: true },
           ],
         }),
         valuesDiscovery: createValuesDiscovery({
@@ -147,6 +147,7 @@ describe('Planning Focus Engine', () => {
             payGrade: 'GS-12',
             step: 5,
             isLawEnforcement: false,
+            hasMilitaryService: false,
           },
         }),
       });
@@ -172,7 +173,7 @@ describe('Planning Focus Engine', () => {
         basicContext: createBasicContext(),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Early retirement', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
+            { id: '1', label: 'Early retirement', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -198,7 +199,7 @@ describe('Planning Focus Engine', () => {
         }),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Retire in 2 years', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED' },
+            { id: '1', label: 'Retire in 2 years', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -251,7 +252,7 @@ describe('Planning Focus Engine', () => {
         basicContext: createBasicContext(),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Early retirement', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
+            { id: '1', label: 'Early retirement', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
@@ -270,7 +271,7 @@ describe('Planning Focus Engine', () => {
         basicContext: createBasicContext(),
         financialGoals: createFinancialGoals({
           allGoals: [
-            { id: '1', label: 'Buy house soon', category: 'MAJOR_PURCHASES', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED' },
+            { id: '1', label: 'Buy house soon', category: 'MAJOR_PURCHASES', priority: 'HIGH', timeHorizon: 'SHORT', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
           ],
         }),
       });
