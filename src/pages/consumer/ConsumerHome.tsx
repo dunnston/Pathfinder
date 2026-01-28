@@ -14,6 +14,22 @@ const SECTIONS: { key: ProfileSection; label: string; route: string }[] = [
   { key: 'financialSnapshot', label: 'Financial Snapshot', route: '/consumer/discovery/financial-snapshot' },
 ]
 
+/**
+ * Check if a date value is valid (not undefined, not an Invalid Date)
+ */
+function isValidDate(date: unknown): boolean {
+  if (!date) return false
+  if (date instanceof Date) {
+    return !isNaN(date.getTime())
+  }
+  // Handle string dates
+  if (typeof date === 'string') {
+    const parsed = new Date(date)
+    return !isNaN(parsed.getTime())
+  }
+  return false
+}
+
 function isSectionComplete(profile: PartialFinancialProfile | null, section: ProfileSection): boolean {
   if (!profile) return false
   const data = profile[section]
@@ -22,7 +38,8 @@ function isSectionComplete(profile: PartialFinancialProfile | null, section: Pro
   // Check if section has meaningful data based on actual type fields
   switch (section) {
     case 'basicContext':
-      return Boolean(data && 'birthDate' in data && data.birthDate)
+      // Must have a valid birthDate (not undefined, not an Invalid Date)
+      return Boolean(data && 'birthDate' in data && isValidDate(data.birthDate))
     case 'retirementVision':
       return Boolean(data && 'targetRetirementAge' in data && data.targetRetirementAge)
     case 'planningPreferences':

@@ -11,6 +11,7 @@ const ConsumerHome = lazy(() => import('./pages/consumer/ConsumerHome').then(m =
 const DiscoveryStart = lazy(() => import('./pages/consumer/DiscoveryStart').then(m => ({ default: m.DiscoveryStart })))
 const DiscoverySection = lazy(() => import('./pages/consumer/DiscoverySection').then(m => ({ default: m.DiscoverySection })))
 const ProfileSummary = lazy(() => import('./pages/consumer/ProfileSummary').then(m => ({ default: m.ProfileSummary })))
+const InsightsPage = lazy(() => import('./pages/consumer/InsightsPage').then(m => ({ default: m.InsightsPage })))
 
 // Advisor pages - lazy loaded (SEC-9: code splitting)
 const AdvisorDashboard = lazy(() => import('./pages/advisor/AdvisorDashboard').then(m => ({ default: m.AdvisorDashboard })))
@@ -56,6 +57,9 @@ function App() {
           } />
           <Route path="/consumer/profile" element={
             <RouteErrorBoundary><ProfileSummary /></RouteErrorBoundary>
+          } />
+          <Route path="/consumer/insights" element={
+            <RouteErrorBoundary><InsightsPage /></RouteErrorBoundary>
           } />
 
           {/* Advisor Routes - wrapped with error boundary */}

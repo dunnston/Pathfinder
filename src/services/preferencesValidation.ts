@@ -186,6 +186,7 @@ export function isCorruptedPreferences(preferences: unknown): boolean {
  */
 export function migratePreferences(
   preferences: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _version?: number
 ): UserPreferences {
   // Currently no migrations needed, but this provides the hook for future use
