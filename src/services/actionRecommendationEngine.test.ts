@@ -45,14 +45,14 @@ const createValuesDiscovery = (overrides: Partial<ValuesDiscovery> = {}): Partia
 const createFinancialGoals = (overrides: Partial<FinancialGoals> = {}): Partial<FinancialGoals> => ({
   state: 'COMPLETED',
   allGoals: [
-    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
+    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
   ],
   ...overrides,
 });
 
 const createFinancialPurpose = (overrides: Partial<FinancialPurpose> = {}): Partial<FinancialPurpose> => ({
   state: 'COMPLETED',
-  primaryDriver: 'SECURITY',
+  primaryDriver: 'STABILITY_PEACE',
   finalText: 'To provide security for my family',
   ...overrides,
 });
@@ -196,6 +196,7 @@ describe('Action Recommendation Engine', () => {
             payGrade: 'GS-13',
             step: 5,
             isLawEnforcement: false,
+            hasMilitaryService: false,
           },
         }),
       });
@@ -213,7 +214,7 @@ describe('Action Recommendation Engine', () => {
       const input = createActionInput({
         basicContext: createBasicContext({
           dependents: [
-            { name: 'Child', relationship: 'child', age: 10, financiallyDependent: true },
+            { relationship: 'child', birthDate: new Date('2016-01-01'), financiallyDependent: true },
           ],
         }),
       });

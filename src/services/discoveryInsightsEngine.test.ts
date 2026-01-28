@@ -48,16 +48,16 @@ const createValuesDiscovery = (overrides: Partial<ValuesDiscovery> = {}): Partia
 const createFinancialGoals = (overrides: Partial<FinancialGoals> = {}): Partial<FinancialGoals> => ({
   state: 'COMPLETED',
   allGoals: [
-    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED' },
-    { id: '2', label: 'Travel', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'FLEXIBLE' },
-    { id: '3', label: 'Legacy', category: 'FAMILY_LEGACY', priority: 'HIGH', timeHorizon: 'LONG', flexibility: 'FLEXIBLE' },
+    { id: '1', label: 'Retire by 62', category: 'RETIREMENT', priority: 'HIGH', timeHorizon: 'MID', flexibility: 'FIXED', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
+    { id: '2', label: 'Travel', category: 'LIFESTYLE', priority: 'MEDIUM', timeHorizon: 'LONG', flexibility: 'FLEXIBLE', source: 'user', isCorePlanningGoal: false, createdAt: new Date().toISOString() },
+    { id: '3', label: 'Legacy', category: 'FAMILY_LEGACY', priority: 'HIGH', timeHorizon: 'LONG', flexibility: 'FLEXIBLE', source: 'user', isCorePlanningGoal: true, createdAt: new Date().toISOString() },
   ],
   ...overrides,
 });
 
 const createFinancialPurpose = (overrides: Partial<FinancialPurpose> = {}): Partial<FinancialPurpose> => ({
   state: 'COMPLETED',
-  primaryDriver: 'SECURITY',
+  primaryDriver: 'STABILITY_PEACE',
   finalText: 'To provide security and peace of mind for my family while enjoying retirement.',
   tradeoffAnchors: [{ axis: 'SECURITY_VS_GROWTH', lean: 'A', strength: 2 }],
   ...overrides,
