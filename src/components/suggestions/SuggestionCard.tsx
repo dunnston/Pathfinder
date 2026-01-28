@@ -193,80 +193,86 @@ export function SuggestionCard({
               </div>
             )}
 
-            {/* Actions */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {suggestion.status === 'pending' && !isEditing && (
-                <>
-                  {showAcceptNotes ? (
-                    <>
-                      <Button size="sm" onClick={handleAccept}>
-                        <CheckCircle2 className="mr-1 h-4 w-4" />
-                        Confirm Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowAcceptNotes(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button size="sm" onClick={() => setShowAcceptNotes(true)}>
-                        <CheckCircle2 className="mr-1 h-4 w-4" />
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsEditing(true)}
-                      >
-                        <Edit3 className="mr-1 h-4 w-4" />
-                        Modify
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onReject(suggestion.id)}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        <XCircle className="mr-1 h-4 w-4" />
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
-
-              {isEditing && (
-                <>
-                  <Button size="sm" onClick={handleSaveEdit}>
-                    Save & Accept
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-                    Cancel
-                  </Button>
-                </>
-              )}
-
-              {(suggestion.status === 'accepted' || suggestion.status === 'modified') && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Added to your plan
-                </div>
-              )}
-
-              {suggestion.status === 'rejected' && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onAccept(suggestion.id)}
-                >
-                  Restore
+            {/* Editing actions (only in expanded view) */}
+            {isEditing && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" onClick={handleSaveEdit}>
+                  Save & Accept
                 </Button>
-              )}
-            </div>
+                <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actions - always visible for pending suggestions */}
+        {!isEditing && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {suggestion.status === 'pending' && (
+              <>
+                {showAcceptNotes ? (
+                  <>
+                    <Button size="sm" onClick={handleAccept}>
+                      <CheckCircle2 className="mr-1 h-4 w-4" />
+                      Confirm Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAcceptNotes(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" onClick={() => setShowAcceptNotes(true)}>
+                      <CheckCircle2 className="mr-1 h-4 w-4" />
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsExpanded(true);
+                        setIsEditing(true);
+                      }}
+                    >
+                      <Edit3 className="mr-1 h-4 w-4" />
+                      Modify
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onReject(suggestion.id)}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <XCircle className="mr-1 h-4 w-4" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+
+            {(suggestion.status === 'accepted' || suggestion.status === 'modified') && (
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <CheckCircle2 className="h-4 w-4" />
+                Added to your plan
+              </div>
+            )}
+
+            {suggestion.status === 'rejected' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onAccept(suggestion.id)}
+              >
+                Restore
+              </Button>
+            )}
           </div>
         )}
       </div>
